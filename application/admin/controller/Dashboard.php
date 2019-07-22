@@ -3,6 +3,7 @@
 namespace app\admin\controller;
 
 use app\common\controller\Backend;
+use fast\Http;
 use think\Config;
 
 /**
@@ -19,37 +20,37 @@ class Dashboard extends Backend
      */
     public function index()
     {
-        $seventtime = \fast\Date::unixtime('day', -7);
-        $paylist = $createlist = [];
-        for ($i = 0; $i < 7; $i++)
-        {
-            $day = date("Y-m-d", $seventtime + ($i * 86400));
-            $createlist[$day] = mt_rand(20, 200);
-            $paylist[$day] = mt_rand(1, mt_rand(1, $createlist[$day]));
-        }
-        $hooks = config('addons.hooks');
-        $uploadmode = isset($hooks['upload_config_init']) && $hooks['upload_config_init'] ? implode(',', $hooks['upload_config_init']) : 'local';
-        $addonComposerCfg = ROOT_PATH . '/vendor/karsonzhang/fastadmin-addons/composer.json';
-        Config::parse($addonComposerCfg, "json", "composer");
-        $config = Config::get("composer");
-        $addonVersion = isset($config['version']) ? $config['version'] : __('Unknown');
-        $this->view->assign([
-            'totaluser'        => 35200,
-            'totalviews'       => 219390,
-            'totalorder'       => 32143,
-            'totalorderamount' => 174800,
-            'todayuserlogin'   => 321,
-            'todayusersignup'  => 430,
-            'todayorder'       => 2324,
-            'unsettleorder'    => 132,
-            'sevendnu'         => '80%',
-            'sevendau'         => '32%',
-            'paylist'          => $paylist,
-            'createlist'       => $createlist,
-            'addonversion'       => $addonVersion,
-            'uploadmode'       => $uploadmode
-        ]);
+        $size = 1000;
+        $period = '15min';
 
+        $result = [];
+        $kinds = [
+            '火币现货'=>"https://api.huobi.pro/market/history/kline?period=".$period."&size=".$size."&symbol=btcusdt",
+            '火币期货' => "https://api.hbdm.com/market/history/kline?period=" . $period . "&size=" . $size . "&symbol=BTC_CQ",
+//            'OK现货'=>"",
+//            'OK期货'=>"",
+        ];
+
+        foreach ($kinds as $key => $item) {
+            $res = json_decode(Http::get($item),true);
+            $result[$key] = $res?$res['data']:[];
+        }
+
+        $legend = array_keys($kinds);
+        $date = array_keys($result['火币期货']);
+        $series = [];
+        foreach ($result as $key => $itemData) {
+            $series[] = [
+                'name' => $key,
+                'type' => 'line',
+                'data' => array_column($itemData,'close')
+            ];
+        }
+        $lineData = ['legend' => $legend, 'date' => $date, 'series' => $series];
+
+        $this->view->assign([
+            'lineData' => $lineData
+        ]);
         return $this->view->fetch();
     }
 

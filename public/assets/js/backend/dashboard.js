@@ -3,111 +3,66 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'table', 'echarts', 'echart
     var Controller = {
         index: function () {
             // 基于准备好的dom，初始化echarts实例
-            var myChart = Echarts.init(document.getElementById('echart'), 'walden');
-
-            // 指定图表的配置项和数据
-            var option = {
+            var inventoryChart = Echarts.init(document.getElementById('k_chart'));
+            var inventoryOption = {
                 title: {
-                    text: '',
-                    subtext: ''
+                    text: 'K线对比',
+                    textStyle: {
+                        color: '#27C24C',
+                        fontSize: '16'
+                    },
                 },
                 tooltip: {
                     trigger: 'axis'
                 },
                 legend: {
-                    data: [__('Sales'), __('Orders')]
+                    data: lineData['legend']
+                },
+                grid: {
+                    "bottom": 100,
                 },
                 toolbox: {
-                    show: false,
                     feature: {
-                        magicType: {show: true, type: ['stack', 'tiled']},
-                        saveAsImage: {show: true}
+                        saveAsImage: {}
                     }
                 },
                 xAxis: {
                     type: 'category',
                     boundaryGap: false,
-                    data: Orderdata.column
+                    data: lineData['date']
                 },
-                yAxis: {},
-                grid: [{
-                    left: 'left',
-                    top: 'top',
-                    right: '10',
-                    bottom: 30
-                }],
-                series: [{
-                    name: __('Sales'),
-                    type: 'line',
-                    smooth: true,
-                    areaStyle: {
-                        normal: {}
-                    },
-                    lineStyle: {
-                        normal: {
-                            width: 1.5
-                        }
-                    },
-                    data: Orderdata.paydata
+                yAxis: {
+                    type: 'value'
                 },
+                dataZoom: [
                     {
-                        name: __('Orders'),
-                        type: 'line',
-                        smooth: true,
-                        areaStyle: {
-                            normal: {}
+                        "xAxisIndex": [
+                            0
+                        ],
+                        bottom: 30,
+                        "start": 0,
+                        "end": 100,
+                        handleIcon: 'path://M306.1,413c0,2.2-1.8,4-4,4h-59.8c-2.2,0-4-1.8-4-4V200.8c0-2.2,1.8-4,4-4h59.8c2.2,0,4,1.8,4,4V413z',
+                        handleSize: '110%',
+                        handleStyle: {
+                            color: "#aaa",
                         },
-                        lineStyle: {
-                            normal: {
-                                width: 1.5
-                            }
+                        textStyle: {
+                            color: "#27C24C"
                         },
-                        data: Orderdata.createdata
-                    }]
+                        borderColor: "#aaa"
+                    },
+                    {
+                        "type": "inside",
+                        "show": true,
+                        // "height": 15,
+                        "start": 30,
+                        "end": 100
+                    }
+                ],
+                series: lineData['series']
             };
-
-            // 使用刚指定的配置项和数据显示图表。
-            myChart.setOption(option);
-
-            //动态添加数据，可以通过Ajax获取数据然后填充
-            setInterval(function () {
-                Orderdata.column.push((new Date()).toLocaleTimeString().replace(/^\D*/, ''));
-                var amount = Math.floor(Math.random() * 200) + 20;
-                Orderdata.createdata.push(amount);
-                Orderdata.paydata.push(Math.floor(Math.random() * amount) + 1);
-
-                //按自己需求可以取消这个限制
-                if (Orderdata.column.length >= 20) {
-                    //移除最开始的一条数据
-                    Orderdata.column.shift();
-                    Orderdata.paydata.shift();
-                    Orderdata.createdata.shift();
-                }
-                myChart.setOption({
-                    xAxis: {
-                        data: Orderdata.column
-                    },
-                    series: [{
-                        name: __('Sales'),
-                        data: Orderdata.paydata
-                    },
-                        {
-                            name: __('Orders'),
-                            data: Orderdata.createdata
-                        }]
-                });
-                if ($("#echart").width() != $("#echart canvas").width() && $("#echart canvas").width() < $("#echart").width()) {
-                    myChart.resize();
-                }
-            }, 2000);
-            $(window).resize(function () {
-                myChart.resize();
-            });
-
-            $(document).on("click", ".btn-checkversion", function () {
-                top.window.$("[data-toggle=checkupdate]").trigger("click");
-            });
-
+            inventoryChart.setOption(inventoryOption);
         }
     };
 
