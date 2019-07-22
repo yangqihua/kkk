@@ -20,8 +20,8 @@ class Dashboard extends Backend
      */
     public function index()
     {
-        $size = 1000;
-        $period = '15min';
+        $size = input('size',1000);
+        $period = input('period','15min');;
 
         $result = [];
         $kinds = [
