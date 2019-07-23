@@ -2,6 +2,7 @@
 
 namespace app\api\controller;
 
+use app\admin\model\ban\Bg;
 use app\common\controller\Api;
 use app\common\model\Config;
 use fast\Http;
@@ -70,6 +71,17 @@ class Ban extends Api
                     $b_data[$value]['status'] = 2;
                     $b_data[$value]['remark'] = 'Gate 买一('.$b_data[$value]['g_bid'][0].')比 BCEX卖一('.$b_data[$value]['b_ask'][0].') 大' . $g_rate . '数量为：' . min($b_data[$value]['g_bid'][1], $b_data[$value]['b_ask'][1]);
                 }
+                $model = new Bg();
+                $model->save([
+                    'token'=>$value,
+                    'g_ask'=>$b_data[$value]['g_ask'][0].'-'.$b_data[$value]['g_ask'][1],
+                    'g_bid'=>$b_data[$value]['g_bid'][0].'-'.$b_data[$value]['g_bid'][1],
+                    'b_ask'=>$b_data[$value]['b_ask'][0].'-'.$b_data[$value]['b_ask'][1],
+                    'b_bid'=>$b_data[$value]['b_bid'][0].'-'.$b_data[$value]['b_bid'][1],
+                    'status'=>$b_data[$value]['status'],
+                    'remark'=>$b_data[$value]['remark'],
+                    'record'=>'暂无成交',
+                ]);
             }
 //            if (count($b_data) > 3) {
 //                break;
