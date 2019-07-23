@@ -15,3 +15,4 @@ composer.lock
 application/database.php
 application/config.php
 application/extra/
+application/api/config.php
