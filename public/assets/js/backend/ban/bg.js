@@ -26,16 +26,34 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                         {checkbox: true},
                         {field: 'id', title: __('Id')},
                         {field: 'token', title: __('Token')},
+                        {field: 'remark', title: __('Remark')},
+                        {field: 'status', title: __('Status')},
+                        {field: 'record', title: __('Record')},
                         {field: 'g_ask', title: __('G_ask')},
                         {field: 'b_bid', title: __('B_bid')},
                         {field: 'b_ask', title: __('B_ask')},
-                        {field: 'record', title: __('Record')},
-                        {field: 'remark', title: __('Remark')},
-                        {field: 'status', title: __('Status')},
-                        {field: 'createtime', title: __('Createtime'), operate:'RANGE', addclass:'datetimerange', formatter: Table.api.formatter.datetime},
-                        {field: 'updatetime', title: __('Updatetime'), operate:'RANGE', addclass:'datetimerange', formatter: Table.api.formatter.datetime},
                         {field: 'g_bid', title: __('G_bid')},
-                        {field: 'operate', title: __('Operate'), table: table, events: Table.api.events.operate, formatter: Table.api.formatter.operate}
+                        {
+                            field: 'createtime',
+                            title: __('Createtime'),
+                            operate: 'RANGE',
+                            addclass: 'datetimerange',
+                            formatter: Table.api.formatter.datetime
+                        },
+                        {
+                            field: 'updatetime',
+                            title: __('Updatetime'),
+                            operate: 'RANGE',
+                            addclass: 'datetimerange',
+                            formatter: Table.api.formatter.datetime
+                        },
+                        {
+                            field: 'operate',
+                            title: __('Operate'),
+                            table: table,
+                            events: Table.api.events.operate,
+                            formatter: Table.api.formatter.operate
+                        }
                     ]
                 ]
             });
