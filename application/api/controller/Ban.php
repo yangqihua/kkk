@@ -19,6 +19,8 @@ class Ban extends Api
     private $rate = 0.008;
     private $gateLib;
 
+    private $minToken = ['ETH_USDT'=>1, 'EOS_USDT'=>30, 'XLM_USDT'=>2000];
+
     public function __construct()
     {
         parent::__construct();
@@ -150,11 +152,12 @@ class Ban extends Api
                         'token' => $token,
                         'type' => '2',    //买/卖(1为买，2为卖)
                         'price' => ''.$b_data[$value]['b_bid'][0],
-                        'amount' => ''.$b_amount
+                        'amount' => ''.min($b_amount,$this->minToken[$value])
                     ], 'POST');
                     // Gate 买
                     $gateRes = $this->gateLib->buy($value, $b_data[$value]['g_ask'][0], $b_amount);
                     $record = json_encode(['bcex_res' => $bcex_res, 'gate_res' => $gateRes]);
+                    trace('下单成功：' . $record, 'error');
 
                 }
                 if ($g_rate > $this->rate) {
@@ -170,12 +173,12 @@ class Ban extends Api
                         'token' => $token,
                         'type' => '1',    //买/卖(1为买，2为卖)
                         'price' => ''.$b_data[$value]['b_ask'][0],
-                        'amount' => ''.$b_amount
+                        'amount' => ''.min($b_amount,$this->minToken[$value])
                     ], 'POST');
                     // Gate 卖
                     $gateRes = $this->gateLib->sell($value, $b_data[$value]['g_bid'][0], $b_amount);
                     $record = json_encode(['bcex_res' => $bcex_res, 'gate_res' => $gateRes]);
-
+                    trace('下单成功：' . $record, 'error');
                 }
                 $model = new Bg();
                 $model->save([
