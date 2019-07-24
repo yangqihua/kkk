@@ -19,7 +19,7 @@ class Ban extends Api
     private $rate = 0.008;
     private $gateLib;
 
-    private $minToken = ['ETH_USDT'=>2, 'EOS_USDT'=>30, 'XLM_USDT'=>2000];
+    private $minToken = ['ETH_USDT'=>1.1, 'EOS_USDT'=>30, 'XLM_USDT'=>2000];
 
     public function __construct()
     {
@@ -147,17 +147,17 @@ class Ban extends Api
                     $b_data[$value]['remark'] = 'BCEX 买一(' . $b_data[$value]['b_bid'][0] . ')比 Gate卖一(' . $b_data[$value]['g_ask'][0] . ') 大' . $b_rate . '数量为：' . $b_amount;
 
                     // BCEX 卖
-                    $bcex_res = json_encode($this->bcex_request('/api_market/placeOrder', [
+                    $bcex_res = $this->bcex_request('/api_market/placeOrder', [
                         'market_type' => '1',
                         'market' => $market,
                         'token' => $token,
                         'type' => '2',    //买/卖(1为买，2为卖)
                         'price' => ''.$b_data[$value]['b_bid'][0],
                         'amount' => ''.min($b_amount,$this->minToken[$value])
-                    ], 'POST'));
+                    ], 'POST');
                     // Gate 买
-                    $gateRes = json_encode($this->gateLib->buy($value, $b_data[$value]['g_ask'][0], $b_amount));
-                    $record = json_encode(['bcex_res' => $bcex_res, 'gate_res' => $gateRes]);
+                    $gateRes = $this->gateLib->buy($value, $b_data[$value]['g_ask'][0], $b_amount);
+                    $record = json_encode(['bcex_res' => $bcex_res, 'gate_res' => $gateRes],JSON_UNESCAPED_UNICODE);
                     trace('下单成功：' . $record, 'error');
 
                 }
@@ -168,17 +168,17 @@ class Ban extends Api
                     // 去 BCEX 买，Gate 卖
 
                     // BCEX 买
-                    $bcex_res = json_encode($this->bcex_request('/api_market/placeOrder', [
+                    $bcex_res = $this->bcex_request('/api_market/placeOrder', [
                         'market_type' => '1',
                         'market' => $market,
                         'token' => $token,
                         'type' => '1',    //买/卖(1为买，2为卖)
                         'price' => ''.$b_data[$value]['b_ask'][0],
                         'amount' => ''.min($b_amount,$this->minToken[$value])
-                    ], 'POST'));
+                    ], 'POST');
                     // Gate 卖
-                    $gateRes = json_encode($this->gateLib->sell($value, $b_data[$value]['g_bid'][0], $b_amount));
-                    $record = json_encode(['bcex_res' => $bcex_res, 'gate_res' => $gateRes]);
+                    $gateRes = $this->gateLib->sell($value, $b_data[$value]['g_bid'][0], $b_amount);
+                    $record = json_encode(['bcex_res' => $bcex_res, 'gate_res' => $gateRes],JSON_UNESCAPED_UNICODE);
                     trace('下单成功：' . $record, 'error');
                 }
                 $model = new Bg();
