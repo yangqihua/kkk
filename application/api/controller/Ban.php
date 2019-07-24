@@ -108,7 +108,7 @@ class Ban extends Api
     public function order()
     {
         $start = time();
-        for ($i = 0; $i < 6; $i++) {
+        for ($i = 0; $i < 15; $i++) {
             $this->_order();
             sleep(2);
         }
