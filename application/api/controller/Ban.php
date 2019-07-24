@@ -19,7 +19,7 @@ class Ban extends Api
     private $rate = 0.008;
     private $gateLib;
 
-    private $minToken = ['ETH_USDT'=>1, 'EOS_USDT'=>30, 'XLM_USDT'=>2000];
+    private $minToken = ['ETH_USDT'=>2, 'EOS_USDT'=>30, 'XLM_USDT'=>2000];
 
     public function __construct()
     {
@@ -119,7 +119,8 @@ class Ban extends Api
 
     private function _order()
     {
-        $coins = ['ETH_USDT', 'EOS_USDT', 'XLM_USDT'];
+//        $coins = ['ETH_USDT', 'EOS_USDT', 'XLM_USDT'];
+        $coins = ['ETH_USDT',];
         foreach ($coins as $key => $value) {
             $name = explode('_', $value);
             $token = $name[0];
