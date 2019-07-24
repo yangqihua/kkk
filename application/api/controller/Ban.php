@@ -141,56 +141,62 @@ class Ban extends Api
                 $b_data[$value]['status'] = 10;
                 $b_data[$value]['remark'] = '暂无机会！';
                 $record = '暂无成交';
+
                 if ($b_rate > $this->rate) {
+                    $b_balance = $this->balance();
                     $b_data[$value]['status'] = 11;
                     $b_amount = min($b_data[$value]['b_bid'][1], $b_data[$value]['g_ask'][1]);
                     $b_data[$value]['remark'] = 'BCEX 买一(' . $b_data[$value]['b_bid'][0] . ')比 Gate卖一(' . $b_data[$value]['g_ask'][0] . ') 大' . $b_rate . '数量为：' . $b_amount;
 
-                    // BCEX 卖
-                    $bcex_res = $this->bcex_request('/api_market/placeOrder', [
-                        'market_type' => '1',
-                        'market' => $market,
-                        'token' => $token,
-                        'type' => '2',    //买/卖(1为买，2为卖)
-                        'price' => '' . $b_data[$value]['b_bid'][0],
-                        'amount' => '' . min($b_amount, $this->minToken[$value])
-                    ], 'POST');
-
-                    if (json_encode($bcex_res, JSON_UNESCAPED_UNICODE) != '可用余额不足') {
+                    $record = '余额不足';
+                    $amount = min($b_amount, $this->minToken[$value]);
+                    // 花 BCEX 的 eth 卖 余额够
+                    if ($b_balance['eth'] > $amount) {
                         // Gate 买
-                        $gateRes = $this->gateLib->buy($value, $b_data[$value]['g_ask'][0], $b_amount);
-                    } else {
-                        $gateRes = '对方余额不足，停止下单';
+                        $gateRes = $this->gateLib->buy($value, $b_data[$value]['g_ask'][0], $amount);
+                        if ($gateRes['message'] == 'Success') {
+                            // BCEX 卖
+                            $bcex_res = $this->bcex_request('/api_market/placeOrder', [
+                                'market_type' => '1',
+                                'market' => $market,
+                                'token' => $token,
+                                'type' => '2',    //买/卖(1为买，2为卖)
+                                'price' => '' . $b_data[$value]['b_bid'][0],
+                                'amount' => '' . $amount
+                            ], 'POST');
+                            $record = json_encode(['bcex_res' => $bcex_res, 'gate_res' => $gateRes], JSON_UNESCAPED_UNICODE);
+                        }
                     }
-                    $record = json_encode(['bcex_res' => $bcex_res, 'gate_res' => $gateRes], JSON_UNESCAPED_UNICODE);
-                    trace('下单成功：' . $record, 'error');
+                    trace('可以下单：' . $record, 'error');
                 }
                 if ($g_rate > $this->rate) {
+                    $b_balance = $this->balance();
                     $b_data[$value]['status'] = 12;
                     $b_amount = min($b_data[$value]['g_bid'][1], $b_data[$value]['b_ask'][1]);
                     $b_data[$value]['remark'] = 'Gate 买一(' . $b_data[$value]['g_bid'][0] . ')比 BCEX卖一(' . $b_data[$value]['b_ask'][0] . ') 大' . $g_rate . '数量为：' . $b_amount;
+
+
+                    $record = '余额不足';
+                    $amount = min($b_amount, $this->minToken[$value]);
                     // 去 BCEX 买，Gate 卖
 
-                    // BCEX 买
-                    $bcex_res = $this->bcex_request('/api_market/placeOrder', [
-                        'market_type' => '1',
-                        'market' => $market,
-                        'token' => $token,
-                        'type' => '1',    //买/卖(1为买，2为卖)
-                        'price' => '' . $b_data[$value]['b_ask'][0],
-                        'amount' => '' . min($b_amount, $this->minToken[$value])
-                    ], 'POST');
-                    // Gate 卖
-
-                    if (json_encode($bcex_res, JSON_UNESCAPED_UNICODE) != '可用余额不足') {
-                        $gateRes = $this->gateLib->sell($value, $b_data[$value]['g_bid'][0], $b_amount);
-                    } else {
-                        $gateRes = '对方余额不足，停止下单';
+                    // 花 BCEX 的 usdt 卖 余额够
+                    if ($b_balance['usdt'] > ($amount*$b_data[$value]['b_ask'][0])) {
+                        $gateRes = $this->gateLib->sell($value, $b_data[$value]['g_bid'][0], $amount);
+                        if ($gateRes['message'] == 'Success') {
+                            // BCEX 卖 usdt
+                            $bcex_res = $this->bcex_request('/api_market/placeOrder', [
+                                'market_type' => '1',
+                                'market' => $market,
+                                'token' => $token,
+                                'type' => '1',    //买/卖(1为买，2为卖)
+                                'price' => '' . $b_data[$value]['b_ask'][0],
+                                'amount' => '' . $amount
+                            ], 'POST');
+                            $record = json_encode(['bcex_res' => $bcex_res, 'gate_res' => $gateRes], JSON_UNESCAPED_UNICODE);
+                        }
                     }
-                    $record = json_encode(['bcex_res' => $bcex_res, 'gate_res' => $gateRes], JSON_UNESCAPED_UNICODE);
-
-
-                    trace('下单成功：' . $record, 'error');
+                    trace('可以下单：' . $record, 'error');
                 }
                 $model = new Bg();
                 $model->save([
@@ -248,31 +254,25 @@ class Ban extends Api
     }
 
 
-//    public function test()
-//    {
-//        $results = $this->bcex_request('/api_market/placeOrder', [
-//            'market_type' => "1",
-//            'market' => 'USDT',
-//            'token' => 'XLM',
-//            'type' => "1",    //买/卖(1为买，2为卖)
-//            'price' => "0.084",
-//            'amount' => "1.1"
-//        ], 'POST');
-//
-////        $results = $this->gateLib->sell('XLM_USDT', 0.08, 15);
-//
-////        $results = $this->bcex_request('/api_market/market/depth', ['market' => 'USDT', 'token' => 'XLM']);
-//        $this->success('请求成功', $results);
-//    }
-//
-//    public function balance()
-//    {
-//        $results = $this->bcex_request('/api_market/getBalance', [
-//            'page' => "1",
-//            'size' => "10",
-//            'tokens' => ['ETH', 'EOS'],
-//        ], 'POST');
-//        $this->success('请求成功', $results);
-//    }
+    public function test()
+    {
+
+        $results = $this->gateLib->sell('BTC_USDT', 10000, 100);
+
+//        $results = $this->bcex_request('/api_market/market/depth', ['market' => 'USDT', 'token' => 'XLM']);
+        $this->success('请求成功', $results);
+    }
+
+    private function balance()
+    {
+        $results = $this->bcex_request('/api_market/getBalance', [
+            'page' => "1",
+            'size' => "10",
+            'tokens' => ['ETH', 'USDT'],
+        ], 'POST');
+        $balance['eth'] = $results['data']['data'][0]['usable'];
+        $balance['usdt'] = $results['data']['data'][1]['usable'];
+        return $balance;
+    }
 
 }
