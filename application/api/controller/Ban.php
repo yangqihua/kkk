@@ -29,11 +29,11 @@ class Ban extends Api
 
     public function bit()
     {
-        $g_result = $this->gateLib->get_orderbook('EOS_ETH');
+        $g_result = $this->gateLib->get_orderbook('ETH_USDT');
         $result['g_bid'] = $g_result['bids'][0];
         $result['g_ask'] = $g_result['asks'][count($g_result['asks'])-1];
 
-        $b_result = json_decode(Http::get('https://api.bittrex.com/api/v1.1/public/getorderbook?market=eth-eos&type=both'),true);
+        $b_result = json_decode(Http::get('https://api.bittrex.com/api/v1.1/public/getorderbook?market=usdt-eths&type=both'),true);
         $result['b_bid'][0] = $b_result['result']['buy'][0]['Rate'];
         $result['b_bid'][1] = $b_result['result']['buy'][0]['Quantity'];
         $result['b_ask'][0] = $b_result['result']['sell'][0]['Rate'];
@@ -199,6 +199,11 @@ class Ban extends Api
                                 'amount' => '' . $amount
                             ], 'POST');
                             $record = json_encode(['bcex_res' => $bcex_res, 'gate_res' => $gateRes], JSON_UNESCAPED_UNICODE);
+                            // 记录盈利
+                            $config = new Config();
+                            $moneyResult = $config->where("name", "money")->find();
+                            $moneyResult['value']+=(($b_data[$value]['b_bid'][0]-$b_data[$value]['g_ask'][0])*$amount);
+                            $config->save($moneyResult);
                         }
                     }
                     trace('可以下单：' . $record, 'error');
@@ -228,6 +233,12 @@ class Ban extends Api
                                 'amount' => '' . $amount
                             ], 'POST');
                             $record = json_encode(['bcex_res' => $bcex_res, 'gate_res' => $gateRes], JSON_UNESCAPED_UNICODE);
+
+                            // 记录盈利
+                            $config = new Config();
+                            $moneyResult = $config->where("name", "money")->find();
+                            $moneyResult['value']+=(($b_data[$value]['g_bid'][0]-$b_data[$value]['b_ask'][0])*$amount);
+                            $config->save($moneyResult);
                         }
                     }
                     trace('可以下单：' . $record, 'error');
