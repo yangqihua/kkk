@@ -27,13 +27,47 @@ class Ban extends Api
         $this->gateLib = new GateLib();
     }
 
-    /**
-     * 首页
-     *
-     */
-    public function index()
+    public function bit()
     {
-        $this->success('请求成功', ['name' => 'jack']);
+        $g_result = $this->gateLib->get_orderbook('EOS_ETH');
+        $result['g_bid'] = $g_result['bids'][0];
+        $result['g_ask'] = $g_result['asks'][count($g_result['asks'])-1];
+
+        $b_result = json_decode(Http::get('https://api.bittrex.com/api/v1.1/public/getorderbook?market=eth-eos&type=both'),true);
+        $result['b_bid'][0] = $b_result['result']['buy'][0]['Rate'];
+        $result['b_bid'][1] = $b_result['result']['buy'][0]['Quantity'];
+        $result['b_ask'][0] = $b_result['result']['sell'][0]['Rate'];
+        $result['b_ask'][1] = $b_result['result']['sell'][0]['Quantity'];
+
+        $b_rate = ($result['b_bid'][0] - $result['g_ask'][0]) / $result['b_bid'][0];
+        $g_rate = ($result['g_bid'][0] - $result['b_ask'][0]) / $result['g_bid'][0];
+
+        $result['status'] = 20;
+        $result['remark'] = 'bit暂无机会！';
+        $record = 'bit暂无成交';
+        if ($b_rate > $this->rate) {
+            $result['status'] = 21;
+            $result['remark'] = 'Bit 买一(' . $result['b_bid'][0] . ')比 Gate卖一(' . $result['g_ask'][0] . ') 大' . $b_rate . '数量为：' . min($result['b_bid'][1], $result['g_ask'][1]);
+            // 去 BCEX 卖，Gate 买
+        }
+        if ($g_rate > $this->rate) {
+            $result['status'] = 22;
+            $result['remark'] = 'Gate 买一(' . $result['g_bid'][0] . ')比 Bit卖一(' . $result['b_ask'][0] . ') 大' . $g_rate . '数量为：' . min($result['g_bid'][1], $result['b_ask'][1]);
+            // 去 BCEX 买，Gate 卖
+        }
+        $model = new Bg();
+        $model->save([
+            'token' => 'EOS_ETH',
+            'g_ask' => $result['g_ask'][0] . '-' . $result['g_ask'][1],
+            'g_bid' => $result['g_bid'][0] . '-' . $result['g_bid'][1],
+            'b_ask' => $result['b_ask'][0] . '-' . $result['b_ask'][1],
+            'b_bid' => $result['b_bid'][0] . '-' . $result['b_bid'][1],
+            'status' => $result['status'],
+            'remark' => $result['remark'],
+            'record' => $record,
+        ]);
+
+        $this->success('请求成功', $result);
     }
 
     public function coins()
