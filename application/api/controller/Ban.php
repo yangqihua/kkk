@@ -19,7 +19,7 @@ class Ban extends Api
     private $rate = 0.008;
     private $gateLib;
 
-    private $minToken = ['ETH_USDT' => 1.1, 'EOS_USDT' => 30, 'XLM_USDT' => 2000];
+    private $minToken = ['ETH_USDT' => 0.88, 'EOS_USDT' => 30, 'XLM_USDT' => 2000];
 
     public function __construct()
     {
