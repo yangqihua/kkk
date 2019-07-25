@@ -33,7 +33,7 @@ class Ban extends Api
         $result['g_bid'] = $g_result['bids'][0];
         $result['g_ask'] = $g_result['asks'][count($g_result['asks'])-1];
 
-        $b_result = json_decode(Http::get('https://api.bittrex.com/api/v1.1/public/getorderbook?market=usdt-eths&type=both'),true);
+        $b_result = json_decode(Http::get('https://api.bittrex.com/api/v1.1/public/getorderbook?market=usdt-eth&type=both'),true);
         $result['b_bid'][0] = $b_result['result']['buy'][0]['Rate'];
         $result['b_bid'][1] = $b_result['result']['buy'][0]['Quantity'];
         $result['b_ask'][0] = $b_result['result']['sell'][0]['Rate'];
