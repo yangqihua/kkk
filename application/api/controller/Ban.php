@@ -57,7 +57,7 @@ class Ban extends Api
         }
         $model = new Bg();
         $model->save([
-            'token' => 'EOS_ETH',
+            'token' => 'ETH_USDT',
             'g_ask' => $result['g_ask'][0] . '-' . $result['g_ask'][1],
             'g_bid' => $result['g_bid'][0] . '-' . $result['g_bid'][1],
             'b_ask' => $result['b_ask'][0] . '-' . $result['b_ask'][1],
