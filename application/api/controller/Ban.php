@@ -29,22 +29,20 @@ class Ban extends Api
 
     public function bit()
     {
-        $g_result = $this->gateLib->get_orderbook('ETH_USDT');
+        $g_result = $this->gateLib->get_orderbook('SERO_USDT');
         $result['g_bid'] = $g_result['bids'][0];
         $result['g_ask'] = $g_result['asks'][count($g_result['asks'])-1];
 
-        $b_result = json_decode(Http::get('https://api.bittrex.com/api/v1.1/public/getorderbook?market=usdt-eth&type=both'),true);
-        $result['b_bid'][0] = $b_result['result']['buy'][0]['Rate'];
-        $result['b_bid'][1] = $b_result['result']['buy'][0]['Quantity'];
-        $result['b_ask'][0] = $b_result['result']['sell'][0]['Rate'];
-        $result['b_ask'][1] = $b_result['result']['sell'][0]['Quantity'];
+        $b_result = json_decode(Http::get('https://openapi.biki.com/open/api/market_dept?symbol=serousdt&type=step0'),true);
+        $result['b_bid'] = $b_result['data']['tick']['bids'][0];
+        $result['b_ask'] = $b_result['data']['tick']['bids'][0];
 
         $b_rate = ($result['b_bid'][0] - $result['g_ask'][0]) / $result['b_bid'][0];
         $g_rate = ($result['g_bid'][0] - $result['b_ask'][0]) / $result['g_bid'][0];
 
         $result['status'] = 20;
-        $result['remark'] = 'bit暂无机会！';
-        $record = 'bit暂无成交';
+        $result['remark'] = 'biki暂无机会！';
+        $record = 'biki暂无成交';
         if ($b_rate > $this->rate) {
             $result['status'] = 21;
             $result['remark'] = 'Bit 买一(' . $result['b_bid'][0] . ')比 Gate卖一(' . $result['g_ask'][0] . ') 大' . $b_rate . '数量为：' . min($result['b_bid'][1], $result['g_ask'][1]);
@@ -57,7 +55,7 @@ class Ban extends Api
         }
         $model = new Bg();
         $model->save([
-            'token' => 'ETH_USDT',
+            'token' => 'SERO_USDT',
             'g_ask' => $result['g_ask'][0] . '-' . $result['g_ask'][1],
             'g_bid' => $result['g_bid'][0] . '-' . $result['g_bid'][1],
             'b_ask' => $result['b_ask'][0] . '-' . $result['b_ask'][1],
