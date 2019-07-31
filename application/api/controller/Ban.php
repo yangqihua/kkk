@@ -7,6 +7,7 @@ use app\api\library\GateLib;
 use app\common\controller\Api;
 use app\common\model\Config;
 use fast\Http;
+use think\Db;
 
 /**
  * 首页接口
@@ -149,6 +150,15 @@ class Ban extends Api
         $this->success('请求成功', '执行时间：' . ($end - $start));
     }
 
+    public function ttt()
+    {
+        // 记录盈利
+//        $config = new Config();
+//        $moneyResult = $config->where("name", "money")->find();
+//        $moneyResult['value']+=1;
+//        Db::name('config')->update(['value' => $moneyResult['value'],'id'=>$moneyResult['id']]);
+    }
+
     private function _order()
     {
 //        $coins = ['ETH_USDT', 'EOS_USDT', 'XLM_USDT'];
@@ -201,7 +211,7 @@ class Ban extends Api
                             $config = new Config();
                             $moneyResult = $config->where("name", "money")->find();
                             $moneyResult['value']+=(($b_data[$value]['b_bid'][0]-$b_data[$value]['g_ask'][0])*$amount);
-                            $config->save($moneyResult);
+                            Db::name('config')->update(['value' => $moneyResult['value'],'id'=>$moneyResult['id']]);
                         }
                     }
                     trace('可以下单：' . $record, 'error');
@@ -236,7 +246,7 @@ class Ban extends Api
                             $config = new Config();
                             $moneyResult = $config->where("name", "money")->find();
                             $moneyResult['value']+=(($b_data[$value]['g_bid'][0]-$b_data[$value]['b_ask'][0])*$amount);
-                            $config->save($moneyResult);
+                            Db::name('config')->update(['value' => $moneyResult['value'],'id'=>$moneyResult['id']]);
                         }
                     }
                     trace('可以下单：' . $record, 'error');
