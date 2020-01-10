@@ -44,7 +44,7 @@ class GateLib
             curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36');
         }
 
-        curl_setopt($ch, CURLOPT_URL, 'https://data.gateio.co/api2/' . $path);
+        curl_setopt($ch, CURLOPT_URL, 'https://data.gateio.life/api2/' . $path);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_HEADER, false);
