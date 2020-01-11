@@ -39,7 +39,7 @@ class Jun extends Api
             $bidPrice = $g['bids'][0]; // 买一
             $askPrice = $g['asks'][count($g['asks']) - 1]; // 卖一
 
-            if ($needBuy > 0.05) {
+            if ($needBuy > 0.04) {
                 $gateRes = $this->gateLib->buy('ETH_USDT', $askPrice[0], min(0.8, $needBuy));
                 // 记录last price
                 $config = new Config();
@@ -47,7 +47,7 @@ class Jun extends Api
                 $moneyResult['value'] = $askPrice[0];
                 Db::name('config')->update(['value' => $moneyResult['value'], 'id' => $moneyResult['id']]);
                 trace('买单结果：' . json_encode($gateRes), 'error');
-            } elseif ($needSell > 0.08) {
+            } elseif ($needSell > 0.04) {
                 $gateRes = $this->gateLib->sell('ETH_USDT', $bidPrice[0], min(0.8, $needSell));
                 // 记录last price
                 $config = new Config();
