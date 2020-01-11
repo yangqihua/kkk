@@ -30,7 +30,7 @@ class Jun extends Api
     {
         $priceData = json_decode(Http::get('https://data.gateio.life/api2/1/ticker/eth_usdt'), true);
         $price = $priceData['last'];
-        if (abs(($price - $this->lastPrice) / $price) > 0.01) {
+        if (abs(($price - $this->lastPrice) / $price) >= 0.006) {
             $totalMoney = $this->balance['ETH'] * $price + $this->balance['USDT'] * 1;
             $halfMoney = $totalMoney / 2;
             $needBuy = ($halfMoney - $this->balance['ETH'] * $price) / $price;
