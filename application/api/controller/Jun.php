@@ -28,7 +28,7 @@ class Jun extends Api
 
     public function jun_cang()
     {
-//        $this->jun_eth_usdt();
+        $this->jun_eth_usdt();
         $this->jun_bch_btc();
         sleep(25);
         $this->jun_eth_usdt();
