@@ -112,6 +112,7 @@ class Jun extends Api
                 'name' => 'ex_config',
                 'group' => 'dictionary',
                 'type' => 'string',
+                'content' => json_encode($data),
                 'value' => json_encode($data)
             ]);
             return $data;
