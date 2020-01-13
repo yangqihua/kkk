@@ -22,63 +22,116 @@ class Jun extends Api
 
     private $minToken = ['ETH_USDT' => 0.88, 'EOS_USDT' => 30, 'XLM_USDT' => 2000];
 
-    private $lastPrice;
-    private $balance;
+    // 杠杆
+    private $balanceRate = 4;
+    private $configData;
 
+    public function jun_cang()
+    {
+//        $this->jun_eth_usdt();
+        $this->jun_bch_btc();
+        sleep(25);
+        $this->jun_eth_usdt();
+        $this->jun_bch_btc();
 
-    public function test_jun()
+        $this->success('请求成功');
+    }
+
+    public function jun_eth_usdt()
     {
         $priceData = json_decode(Http::get('https://data.gateio.life/api2/1/ticker/eth_usdt'), true);
-        $price = $priceData['last'];
-        if (abs(($price - $this->lastPrice) / $price) >= 0.006) {
-            $totalMoney = $this->balance['ETH'] * $price + $this->balance['USDT'] * 1;
+        $price = $priceData['last'] * 1;
+        if (abs(($price - $this->configData['eth_last_price']) / $price) >= 0.008) {
+            $totalMoney = $this->configData['ETH'] * $price + $this->configData['USDT'] * 1;
             $halfMoney = $totalMoney / 2;
-            $needBuy = ($halfMoney - $this->balance['ETH'] * $price) / $price;
-            $needSell = ($halfMoney - $this->balance['USDT']) / $price;
+            $needBuy = ($halfMoney - $this->configData['ETH'] * $price) / $price;
+            $needSell = ($halfMoney - $this->configData['USDT']) / $price;
             $g = json_decode(Http::get('https://data.gateio.life/api2/1/orderBook/ETH_USDT'), true);
             $bidPrice = $g['bids'][0]; // 买一
             $askPrice = $g['asks'][count($g['asks']) - 1]; // 卖一
-
             if ($needBuy > 0.04) {
-                $gateRes = $this->gateLib->buy('ETH_USDT', $askPrice[0], min(0.8, $needBuy));
+                $gateRes = $this->gateLib->buy('ETH_USDT', $askPrice[0], min(1.2, $needBuy));
                 // 记录last price
-                $config = new Config();
-                $moneyResult = $config->where("name", "eth_last_price")->find();
-                $moneyResult['value'] = $askPrice[0];
-                Db::name('config')->update(['value' => $moneyResult['value'], 'id' => $moneyResult['id']]);
-                trace('买单结果：' . json_encode($gateRes), 'error');
+                $this->configData['eth_last_price'] = $askPrice[0];
+                $this->updateExConfig($this->configData);
+                trace('jun_eth_usdt买单结果：' . json_encode($gateRes), 'error');
             } elseif ($needSell > 0.04) {
-                $gateRes = $this->gateLib->sell('ETH_USDT', $bidPrice[0], min(0.8, $needSell));
+                $gateRes = $this->gateLib->sell('ETH_USDT', $bidPrice[0], min(1.2, $needSell));
                 // 记录last price
-                $config = new Config();
-                $moneyResult = $config->where("name", "eth_last_price")->find();
-                $moneyResult['value'] = $bidPrice[0];
-                Db::name('config')->update(['value' => $moneyResult['value'], 'id' => $moneyResult['id']]);
-                trace('卖单结果：' . json_encode($gateRes), 'error');
+                $this->configData['eth_last_price'] = $bidPrice[0];
+                $this->updateExConfig($this->configData);
+                trace('jun_eth_usdt卖单结果：' . json_encode($gateRes), 'error');
             }
         }
-        $this->success('请求成功', $this->balance);
     }
 
-    private function refreshData()
+    public function jun_bch_btc()
     {
-        $balanceData = $this->gateLib->get_balances();
-        $this->balance = $balanceData['available'];
+        $priceData = json_decode(Http::get('https://data.gateio.life/api2/1/ticker/bch_btc'), true);
+        $price = $priceData['last'] * 1;
+        if (abs(($price - $this->configData['bch_last_price']) / $price) >= 0.008) {
+            $totalMoney = $this->configData['BCH'] * $price + $this->configData['BTC'] * 1;
+            $halfMoney = $totalMoney / 2;
+            $needBuy = ($halfMoney - $this->configData['BCH'] * $price) / $price;
+            $needSell = ($halfMoney - $this->configData['BTC']) / $price;
+            $g = json_decode(Http::get('https://data.gateio.life/api2/1/orderBook/BCH_BTC'), true);
+            $bidPrice = $g['bids'][0]; // 买一
+            $askPrice = $g['asks'][count($g['asks']) - 1]; // 卖一
+            if ($needBuy > 0.035) {
+                $gateRes = $this->gateLib->buy('BCH_BTC', $askPrice[0], min(1, $needBuy));
+                // 记录last price
+                $this->configData['bch_last_price'] = $askPrice[0];
+                $this->updateExConfig($this->configData);
+                trace('jun_bch_btc买单结果：' . json_encode($gateRes), 'error');
+            } elseif ($needSell > 0.035) {
+                $gateRes = $this->gateLib->sell('BCH_BTC', $bidPrice[0], min(1, $needSell));
+                // 记录last price
+                $this->configData['bch_last_price'] = $bidPrice[0];
+                $this->updateExConfig($this->configData);
+                trace('jun_bch_btc卖单结果：' . json_encode($gateRes), 'error');
+            }
+        }
     }
 
+    private function getExConfig()
+    {
+        $config = new Config();
+        $result = $config->where("name", "ex_config")->find();
+        if (!$result) {
+            $balanceData = $this->gateLib->get_balances();
+            $balance = $balanceData['available'];
+            $data = [
+                'eth_last_price' => 1,
+                'bch_last_price' => 1,
+                'ETH' => $balance['ETH'] * $this->balanceRate,
+                'USDT' => $balance['USDT'] * $this->balanceRate,
+                'BTC' => $balance['BTC'] * $this->balanceRate,
+                'BCH' => $balance['BCH'] * $this->balanceRate,
+            ];
+            Db::name('config')->insert([
+                'name' => 'ex_config',
+                'group' => 'dictionary',
+                'type' => 'string',
+                'value' => json_encode($data)
+            ]);
+            return $data;
+        }
+        return json_decode($result['value'], true);
+    }
+
+    private function updateExConfig($exConfig)
+    {
+        $config = new Config();
+        $result = $config->where("name", "ex_config")->find();
+        $result['value'] = json_encode($exConfig);
+        Db::name('config')->update(['value' => $result['value'], 'id' => $result['id']]);
+    }
 
     public function __construct()
     {
         parent::__construct();
         $this->gateLib = new GateLib();
-
-        $config = new Config();
-        $moneyResult = $config->where("name", "eth_last_price")->find();
-        $this->lastPrice = $moneyResult['value'];
-        if (!$this->lastPrice) {
-            $this->lastPrice = 1;
-        }
-        $this->refreshData();
+        $this->configData = $this->getExConfig();
     }
 
     public function coins()
