@@ -68,7 +68,7 @@ class Jun extends Api
     {
         $priceData = json_decode(Http::get('https://data.gateio.life/api2/1/ticker/eth_usdt'), true);
         $price = $priceData['last'] * 1;
-        if (abs(($price - $this->configData['eth_last_price']) / $price) >= 0.008) {
+        if (abs(($price - $this->configData['eth_last_price']) / $price) >= 0.01) {
             $totalMoney = $this->configData['ETH'] * $price + $this->configData['USDT'] * 1;
             $halfMoney = $totalMoney / 2;
             $needBuy = ($halfMoney - $this->configData['ETH'] * $price) / $price;
@@ -100,7 +100,7 @@ class Jun extends Api
     {
         $priceData = json_decode(Http::get('https://data.gateio.life/api2/1/ticker/bch_btc'), true);
         $price = $priceData['last'] * 1;
-        if (abs(($price - $this->configData['bch_last_price']) / $price) >= 0.008) {
+        if (abs(($price - $this->configData['bch_last_price']) / $price) >= 0.01) {
             $totalMoney = $this->configData['BCH'] * $price + $this->configData['BTC'] * 1;
             $halfMoney = $totalMoney / 2;
             $needBuy = ($halfMoney - $this->configData['BCH'] * $price) / $price;
