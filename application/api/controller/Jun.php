@@ -36,6 +36,8 @@ class Jun extends Api
         $bchPrice = $priceData['last'] * 1;
 
         $config = $this->getExConfig();
+        $config['eth_now_price'] = $ethPrice.'('.(abs($config['eth_last_price']-$ethPrice)/$ethPrice)*100.0.'%)';
+        $config['bch_now_price'] = $bchPrice.'('.(abs($config['bch_last_price']-$bchPrice)/$bchPrice)*100.0.'%)';
         $config['ETH_RATE'] = (($config['USDT'] - $config['ETH'] * $ethPrice) / $ethPrice) . ' ETH';
         $config['ETH'] = $config['ETH'] . '(' . $config['ETH'] * $ethPrice . ' USDT)';
         $config['BCH_RATE'] = (($config['BTC'] - $config['BCH'] * $bchPrice) / $bchPrice) . ' BCH';
