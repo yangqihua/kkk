@@ -36,11 +36,21 @@ class Jun extends Api
         $bchPrice = $priceData['last'] * 1;
 
         $config = $this->getExConfig();
-        $config['ETH_RATE'] = (($config['USDT']-$config['ETH'] * $ethPrice)/$ethPrice).' ETH';
+        $config['ETH_RATE'] = (($config['USDT'] - $config['ETH'] * $ethPrice) / $ethPrice) . ' ETH';
         $config['ETH'] = $config['ETH'] . '(' . $config['ETH'] * $ethPrice . ' USDT)';
-        $config['BCH_RATE'] = (($config['BTC']-$config['BCH'] * $bchPrice)/$bchPrice).' BTC';
+        $config['BCH_RATE'] = (($config['BTC'] - $config['BCH'] * $bchPrice) / $bchPrice) . ' BCH';
         $config['BCH'] = $config['BCH'] . '(' . $config['BCH'] * $bchPrice . ' BTC)';
-        $this->success('请求成功', $config);
+
+        $balanceData = $this->gateLib->get_balances();
+        $balance = $balanceData['available'];
+
+        $b = ['ETH' => $balance['ETH'], 'USDT' => $balance['USDT'], 'BCH' => $balance['BCH'], 'BTC' => $balance['BTC']];
+        $b['ETH_RATE'] = (($b['USDT'] - $b['ETH'] * $ethPrice) / $ethPrice) . ' ETH';
+        $b['ETH'] = $b['ETH'] . '(' . $b['ETH'] * $ethPrice . ' USDT)';
+        $b['BCH_RATE'] = (($b['BTC'] - $b['BCH'] * $bchPrice) / $bchPrice) . ' BCH';
+        $b['BCH'] = $b['BCH'] . '(' . $b['BCH'] * $bchPrice . ' BTC)';
+
+        $this->success('请求成功', ['account1' => $config, 'account2' =>$b]);
     }
 
     public function jun_cang()
@@ -58,8 +68,6 @@ class Jun extends Api
     {
         $priceData = json_decode(Http::get('https://data.gateio.life/api2/1/ticker/eth_usdt'), true);
         $price = $priceData['last'] * 1;
-
-
         if (abs(($price - $this->configData['eth_last_price']) / $price) >= 0.008) {
             $totalMoney = $this->configData['ETH'] * $price + $this->configData['USDT'] * 1;
             $halfMoney = $totalMoney / 2;
@@ -72,12 +80,16 @@ class Jun extends Api
                 $gateRes = $this->gateLib->buy('ETH_USDT', $askPrice[0], min(1.2, $needBuy));
                 // 记录last price
                 $this->configData['eth_last_price'] = $askPrice[0];
+                $this->configData['ETH'] += min(1.2, $needBuy);
+                $this->configData['USDT'] -= min(1.2, $needBuy) * $askPrice[0];
                 $this->updateExConfig($this->configData);
                 trace('jun_eth_usdt买单结果：' . json_encode($gateRes), 'error');
             } elseif ($needSell > 0.04) {
                 $gateRes = $this->gateLib->sell('ETH_USDT', $bidPrice[0], min(1.2, $needSell));
                 // 记录last price
                 $this->configData['eth_last_price'] = $bidPrice[0];
+                $this->configData['ETH'] -= min(1.2, $needSell);
+                $this->configData['USDT'] += min(1.2, $needSell) * $bidPrice[0];
                 $this->updateExConfig($this->configData);
                 trace('jun_eth_usdt卖单结果：' . json_encode($gateRes), 'error');
             }
@@ -100,12 +112,16 @@ class Jun extends Api
                 $gateRes = $this->gateLib->buy('BCH_BTC', $askPrice[0], min(1, $needBuy));
                 // 记录last price
                 $this->configData['bch_last_price'] = $askPrice[0];
+                $this->configData['BCH'] += min(1, $needBuy);
+                $this->configData['BTC'] -= min(1, $needBuy) * $askPrice[0];
                 $this->updateExConfig($this->configData);
                 trace('jun_bch_btc买单结果：' . json_encode($gateRes), 'error');
             } elseif ($needSell > 0.035) {
                 $gateRes = $this->gateLib->sell('BCH_BTC', $bidPrice[0], min(1, $needSell));
                 // 记录last price
                 $this->configData['bch_last_price'] = $bidPrice[0];
+                $this->configData['BCH'] -= min(1, $needSell);
+                $this->configData['BTC'] += min(1, $needSell) * $bidPrice[0];
                 $this->updateExConfig($this->configData);
                 trace('jun_bch_btc卖单结果：' . json_encode($gateRes), 'error');
             }
