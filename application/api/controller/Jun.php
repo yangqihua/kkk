@@ -26,6 +26,21 @@ class Jun extends Api
     private $balanceRate = 4;
     private $configData;
 
+
+    public function test_config()
+    {
+        $priceData = json_decode(Http::get('https://data.gateio.life/api2/1/ticker/eth_usdt'), true);
+        $ethPrice = $priceData['last'] * 1;
+
+        $priceData = json_decode(Http::get('https://data.gateio.life/api2/1/ticker/bch_btc'), true);
+        $bchPrice = $priceData['last'] * 1;
+
+        $config = $this->getExConfig();
+        $config['ETH'] = $config['ETH'] . '(' . $config['ETH'] * $ethPrice . ' USDT)';
+        $config['BCH'] = $config['BCH'] . '(' . $config['BCH'] * $bchPrice . ' BTC)';
+        $this->success('请求成功', $config);
+    }
+
     public function jun_cang()
     {
         $this->jun_eth_usdt();
@@ -41,6 +56,8 @@ class Jun extends Api
     {
         $priceData = json_decode(Http::get('https://data.gateio.life/api2/1/ticker/eth_usdt'), true);
         $price = $priceData['last'] * 1;
+
+
         if (abs(($price - $this->configData['eth_last_price']) / $price) >= 0.008) {
             $totalMoney = $this->configData['ETH'] * $price + $this->configData['USDT'] * 1;
             $halfMoney = $totalMoney / 2;
