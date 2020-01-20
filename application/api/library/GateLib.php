@@ -5,13 +5,19 @@ namespace app\api\library;
 class GateLib
 {
 
-    private $key ;
+    private $key;
     private $secret;
 
-    public function __construct()
+    public function __construct($key='', $secret='')
     {
-        $this->key = \config('gate.key');
-        $this->secret = \config('gate.secret');
+        $this->key = $key;
+        $this->secret = $secret;
+        if (!$key) {
+            $this->key = \config('gate.key');
+        }
+        if (!$secret) {
+            $this->secret = \config('gate.secret');
+        }
     }
 
     public function gate_query($path, array $req = array())
@@ -340,7 +346,7 @@ class GateLib
 
     public function get_ask_bid($symbol)
     {
-        $symbol = $symbol.'_eth';
+        $symbol = $symbol . '_eth';
         $gateResult = $this->get_orderbook($symbol);
         $gateAsks1 = $gateResult['asks'][count($gateResult['asks']) - 1]; // 卖1
         $gateBids1 = $gateResult['bids'][0];  // 买1
