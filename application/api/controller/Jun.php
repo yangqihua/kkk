@@ -23,6 +23,7 @@ class Jun extends Api
     private $xuConfigData;
     // 杠杆
     private $balanceRate = 4;
+    private $xuBalanceRate = 2;
 
 
     public function jun_cang()
@@ -221,10 +222,10 @@ class Jun extends Api
             $data = [
                 'eos_last_price' => 1,
                 'bch_last_price' => 1,
-                'EOS' => $balance['EOS'] * $this->balanceRate,
-                'USDT' => $balance['USDT'] * $this->balanceRate,
-                'BTC' => $balance['BTC'] * $this->balanceRate,
-                'BCH' => $balance['BCH'] * $this->balanceRate,
+                'EOS' => $balance['EOS'] * $this->xuBalanceRate,
+                'USDT' => $balance['USDT'] * $this->xuBalanceRate,
+                'BTC' => $balance['BTC'] * $this->xuBalanceRate,
+                'BCH' => $balance['BCH'] * $this->xuBalanceRate,
             ];
             Db::name('config')->insert([
                 'name' => 'ex_xu_config',
