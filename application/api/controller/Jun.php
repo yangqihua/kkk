@@ -3,6 +3,7 @@
 namespace app\api\controller;
 
 use app\admin\model\ban\Bg;
+use app\admin\model\JunBalance;
 use app\api\library\GateLib;
 use app\common\controller\Api;
 use app\common\model\Config;
@@ -24,6 +25,70 @@ class Jun extends Api
     // 杠杆
     private $balanceRate = 4;
     private $xuBalanceRate = 2;
+
+
+    public function tong_ji(){
+        $this->tong_yang();
+        $this->tong_xu();
+    }
+
+    public function tong_yang()
+    {
+        $balanceData = $this->yangGateLib->get_balances();
+        $balance = $balanceData['available'];
+
+        $priceData = json_decode(Http::get('https://data.gateio.life/api2/1/ticker/eth_usdt'), true);
+        $ethPrice = $priceData['last'] * 1;
+
+        $priceData = json_decode(Http::get('https://data.gateio.life/api2/1/ticker/bch_usdt'), true);
+        $bchPrice = $priceData['last'] * 1;
+
+        $priceData = json_decode(Http::get('https://data.gateio.life/api2/1/ticker/btc_usdt'), true);
+        $btcPrice = $priceData['last'] * 1;
+
+        $content = [
+            'MONEY'=>$balance['ETH']*$ethPrice+$balance['BCH']*$bchPrice+$balance['BTC']*$btcPrice+$balance['USDT'],
+            'USDT' => $balance['USDT'],
+            'ETH' => $balance['ETH'],
+            'BCH' => $balance['BCH'],
+            'BTC' => $balance['BTC'],
+        ];
+
+        $model = new JunBalance();
+        $model->save([
+            'username'=>'yang',
+            'content' => json_encode($content),
+        ]);
+    }
+
+    public function tong_xu()
+    {
+        $balanceData = $this->xuGateLib->get_balances();
+        $balance = $balanceData['available'];
+
+        $priceData = json_decode(Http::get('https://data.gateio.life/api2/1/ticker/eos_usdt'), true);
+        $eosPrice = $priceData['last'] * 1;
+
+        $priceData = json_decode(Http::get('https://data.gateio.life/api2/1/ticker/bch_usdt'), true);
+        $bchPrice = $priceData['last'] * 1;
+
+        $priceData = json_decode(Http::get('https://data.gateio.life/api2/1/ticker/btc_usdt'), true);
+        $btcPrice = $priceData['last'] * 1;
+
+        $content = [
+            'MONEY'=>$balance['EOS']*$eosPrice+$balance['BCH']*$bchPrice+$balance['BTC']*$btcPrice+$balance['USDT'],
+            'USDT' => $balance['USDT'],
+            'EOS' => $balance['EOS'],
+            'BCH' => $balance['BCH'],
+            'BTC' => $balance['BTC'],
+        ];
+
+        $model = new JunBalance();
+        $model->save([
+            'username'=>'xu',
+            'content' => json_encode($content),
+        ]);
+    }
 
 
     public function jun_cang()
