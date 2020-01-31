@@ -32,7 +32,9 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'table', 'echarts', 'echart
                     data: lineData['date']
                 },
                 yAxis: {
-                    type: 'value'
+                    type: 'value',
+                    boundaryGap: [0, '100%'],
+                    scale: true,
                 },
                 dataZoom: [
                     {
@@ -93,7 +95,9 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'table', 'echarts', 'echart
                     data: xuLineData['date']
                 },
                 yAxis: {
-                    type: 'value'
+                    type: 'value',
+                    boundaryGap: [0, '100%'],
+                    scale: true,
                 },
                 dataZoom: [
                     {
