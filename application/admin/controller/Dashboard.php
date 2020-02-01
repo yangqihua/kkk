@@ -16,6 +16,9 @@ use think\Db;
 class Dashboard extends Backend
 {
 
+    protected $noNeedLogin = ['*'];
+    protected $noNeedRight = ['*'];
+
     /**
      * 查看
      */
