@@ -344,25 +344,26 @@ class Jun extends Api
         $priceData = json_decode(Http::get('https://data.gateio.life/api2/1/ticker/eth_usdt'), true);
         $ethPrice = $priceData['last'] * 1;
 
-        $priceData = json_decode(Http::get('https://data.gateio.life/api2/1/ticker/bch_btc'), true);
+        $priceData = json_decode(Http::get('https://data.gateio.life/api2/1/ticker/sero_usdt'), true);
         $bchPrice = $priceData['last'] * 1;
 
         $config = $this->getYangExConfig();
         $config['eth_now_price'] = $ethPrice . '(' . (abs($config['eth_last_price'] - $ethPrice) / $ethPrice) * 100.0 . '%)';
-        $config['bch_now_price'] = $bchPrice . '(' . (abs($config['bch_last_price'] - $bchPrice) / $bchPrice) * 100.0 . '%)';
+        $config['bch_now_price'] = $bchPrice . '(' . (abs($config['sero_last_price'] - $bchPrice) / $bchPrice) * 100.0 . '%)';
         $config['ETH_RATE'] = (($config['USDT'] - $config['ETH'] * $ethPrice) / $ethPrice) . ' ETH';
         $config['ETH'] = $config['ETH'] . '(' . $config['ETH'] * $ethPrice . ' USDT)';
-        $config['BCH_RATE'] = (($config['BTC'] - $config['BCH'] * $bchPrice) / $bchPrice) . ' BCH';
-        $config['BCH'] = $config['BCH'] . '(' . $config['BCH'] * $bchPrice . ' BTC)';
+
+        $config['SERO_RATE'] = (($config['SERO_USDT'] - $config['SERO'] * $bchPrice) / $bchPrice) . ' SERO';
+        $config['SERO'] = $config['SERO'] . '(' . $config['SERO'] * $bchPrice . ' USDT)';
 
         $balanceData = $this->yangGateLib->get_balances();
         $balance = $balanceData['available'];
 
-        $b = ['ETH' => $balance['ETH'], 'USDT' => $balance['USDT'], 'BCH' => $balance['BCH'], 'BTC' => $balance['BTC']];
+        $b = ['ETH' => $balance['ETH'], 'USDT' => $balance['USDT'], 'SERO' => $balance['SERO']];
         $b['ETH_RATE'] = (($b['USDT'] - $b['ETH'] * $ethPrice) / $ethPrice) . ' ETH';
         $b['ETH'] = $b['ETH'] . '(' . $b['ETH'] * $ethPrice . ' USDT)';
-        $b['BCH_RATE'] = (($b['BTC'] - $b['BCH'] * $bchPrice) / $bchPrice) . ' BCH';
-        $b['BCH'] = $b['BCH'] . '(' . $b['BCH'] * $bchPrice . ' BTC)';
+        $b['SERO_RATE'] = (($b['USDT'] - $b['SERO'] * $bchPrice) / $bchPrice) . ' SERO';
+        $b['SERO'] = $b['SERO'] . '(' . $b['SERO'] * $bchPrice . ' USDT)';
         $this->success('请求成功', ['account1' => $config, 'account2' => $b]);
     }
 
