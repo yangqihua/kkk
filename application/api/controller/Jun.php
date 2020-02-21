@@ -145,7 +145,7 @@ class Jun extends Api
             $askPrice = $g['asks'][count($g['asks']) - 1]; // 卖一
             if ($needBuy > 50) {
 //                $needBuy = min($askPrice[1],min(2000, $needBuy));
-                $needBuy = min(min(2000, $needBuy));
+                $needBuy = min(2000, $needBuy);
                 $gateRes = $this->yangGateLib->buy('SERO_USDT', $askPrice[0], $needBuy);
                 // 记录last price
                 $this->yangConfigData['sero_last_price'] = $askPrice[0];
@@ -155,7 +155,7 @@ class Jun extends Api
                 trace('jun_sero_usdt买单结果：' . json_encode($gateRes), 'error');
             } elseif ($needSell > 50) {
 //                $needSell = min($bidPrice[1],min(2000, $needSell));
-                $needSell = min(min(2000, $needSell));
+                $needSell = min(2000, $needSell);
                 $gateRes = $this->yangGateLib->sell('SERO_SERO', $bidPrice[0], $needSell);
                 // 记录last price
                 $this->yangConfigData['sero_last_price'] = $bidPrice[0];
