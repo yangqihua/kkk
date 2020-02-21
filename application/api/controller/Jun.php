@@ -27,7 +27,8 @@ class Jun extends Api
     private $xuBalanceRate = 2;
 
 
-    public function tong_ji(){
+    public function tong_ji()
+    {
         $this->tong_yang();
 //        $this->tong_xu();
     }
@@ -45,15 +46,15 @@ class Jun extends Api
         $bchPrice = $priceData['last'] * 1;
 
         $content = [
-            'MONEY'=>($balance['ETH']+$locked['ETH'])*$ethPrice+($balance['SERO']+$locked['SERO'])*$bchPrice+($locked['USDT']+$balance['USDT']),
-            'USDT' => ($locked['USDT']+$balance['USDT']),
-            'ETH' => ($balance['ETH']+$locked['ETH']),
-            'SERO' => ($balance['SERO']+$locked['SERO']),
+            'MONEY' => ($balance['ETH'] + $locked['ETH']) * $ethPrice + ($balance['SERO'] + $locked['SERO']) * $bchPrice + ($locked['USDT'] + $balance['USDT']),
+            'USDT' => ($locked['USDT'] + $balance['USDT']),
+            'ETH' => ($balance['ETH'] + $locked['ETH']),
+            'SERO' => ($balance['SERO'] + $locked['SERO']),
         ];
 
         $model = new JunBalance();
         $model->save([
-            'username'=>'yang',
+            'username' => 'yang',
             'content' => json_encode($content),
         ]);
     }
@@ -73,7 +74,7 @@ class Jun extends Api
         $btcPrice = $priceData['last'] * 1;
 
         $content = [
-            'MONEY'=>$balance['EOS']*$eosPrice+$balance['BCH']*$bchPrice+$balance['BTC']*$btcPrice+$balance['USDT'],
+            'MONEY' => $balance['EOS'] * $eosPrice + $balance['BCH'] * $bchPrice + $balance['BTC'] * $btcPrice + $balance['USDT'],
             'USDT' => $balance['USDT'],
             'EOS' => $balance['EOS'],
             'BCH' => $balance['BCH'],
@@ -82,7 +83,7 @@ class Jun extends Api
 
         $model = new JunBalance();
         $model->save([
-            'username'=>'xu',
+            'username' => 'xu',
             'content' => json_encode($content),
         ]);
     }
@@ -104,14 +105,17 @@ class Jun extends Api
         $priceData = json_decode(Http::get('https://data.gateio.life/api2/1/ticker/eth_usdt'), true);
         $price = $priceData['last'] * 1;
         if (abs(($price - $this->yangConfigData['eth_last_price']) / $price) >= 0.01) {
-            $totalMoney = $this->yangConfigData['ETH'] * $price + $this->yangConfigData['USDT'] * 1;
-            $halfMoney = $totalMoney / 2;
-            $needBuy = ($halfMoney - $this->yangConfigData['ETH'] * $price) / $price;
-            $needSell = ($halfMoney - $this->yangConfigData['USDT']) / $price;
+
             $g = json_decode(Http::get('https://data.gateio.life/api2/1/orderBook/ETH_USDT'), true);
             $bidPrice = $g['bids'][0]; // 买一
             $askPrice = $g['asks'][count($g['asks']) - 1]; // 卖一
-            if ($needBuy > 0.04) {
+
+            $totalMoney = $this->yangConfigData['ETH'] * $price + $this->yangConfigData['USDT'] * 1;
+            $halfMoney = $totalMoney / 2;
+            $needBuy = ($halfMoney - $this->yangConfigData['ETH'] * $askPrice[0]) / $askPrice[0];
+            $needSell = ($halfMoney - $this->yangConfigData['USDT']) / $bidPrice[0];
+
+            if ($needBuy > 0.04 && abs(($askPrice[0] - $this->yangConfigData['eth_last_price']) / $askPrice[0]) >= 0.01) {
                 $gateRes = $this->yangGateLib->buy('ETH_USDT', $askPrice[0], min(1.2, $needBuy));
                 // 记录last price
                 $this->yangConfigData['eth_last_price'] = $askPrice[0];
@@ -119,7 +123,7 @@ class Jun extends Api
                 $this->yangConfigData['USDT'] -= min(1.2, $needBuy) * $askPrice[0];
                 $this->updateYangExConfig($this->yangConfigData);
                 trace('jun_eth_usdt买单结果：' . json_encode($gateRes), 'error');
-            } elseif ($needSell > 0.04) {
+            } elseif ($needSell > 0.04 && abs(($bidPrice[0] - $this->yangConfigData['eth_last_price']) / $bidPrice[0]) >= 0.01) {
                 $gateRes = $this->yangGateLib->sell('ETH_USDT', $bidPrice[0], min(1.2, $needSell));
                 // 记录last price
                 $this->yangConfigData['eth_last_price'] = $bidPrice[0];
@@ -155,7 +159,7 @@ class Jun extends Api
                 $this->yangConfigData['SERO_USDT'] -= $needBuy * $askPrice[0];
                 $this->updateYangExConfig($this->yangConfigData);
                 trace('jun_sero_usdt买单结果：' . json_encode($gateRes), 'error');
-            } elseif ($needSell > 50  && abs(($bidPrice[0] - $this->yangConfigData['sero_last_price']) / $bidPrice[0]) >= 0.01) {
+            } elseif ($needSell > 50 && abs(($bidPrice[0] - $this->yangConfigData['sero_last_price']) / $bidPrice[0]) >= 0.01) {
 //                $needSell = min($bidPrice[1],min(2000, $needSell));
                 $needSell = min(2000, $needSell);
                 $gateRes = $this->yangGateLib->sell('SERO_USDT', $bidPrice[0], $needSell);
@@ -185,8 +189,8 @@ class Jun extends Api
                 'sero_last_price' => 1,
                 'ETH' => $balance['ETH'] * $this->balanceRate,
                 'SERO' => $balance['SERO'] * $this->balanceRate,
-                'USDT' => $balance['ETH']*$ethPrice * $this->balanceRate,
-                'SERO_USDT' => $balance['SERO']*$seroPrice * $this->balanceRate,
+                'USDT' => $balance['ETH'] * $ethPrice * $this->balanceRate,
+                'SERO_USDT' => $balance['SERO'] * $seroPrice * $this->balanceRate,
             ];
             Db::name('config')->insert([
                 'name' => 'ex_config',
