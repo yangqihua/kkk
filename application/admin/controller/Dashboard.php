@@ -85,29 +85,29 @@ WHERE createtime>:firstDay and username="yang";';
         }
         $lineData = ['legend' => $legend, 'date' => $date, 'series' => $series];
 
-        $legend = ['MONEY','USDT','EOS','BCH','BTC'];
-        $series = [];
-        $date = [];
-        $firstDay = strtotime(date('Y-m-d', strtotime("-6 month")));
-        $sql = 'SELECT from_unixtime(createtime,\'%Y-%m-%d %H:%i\') createTime,content from jun_balance 
-WHERE createtime>:firstDay and username="xu";';
-        $yangBalances = Db::query($sql, ['firstDay' => $firstDay]);
-        $moneyData = [];
-        foreach ($yangBalances as $key=>$balance){
-            $content = json_decode($balance['content'],true);
-            foreach ($legend as $k=>$v){
-                $moneyData[$v][]=$content[$v];
-            }
-            $date[] = $balance['createTime'];
-        }
-        foreach ($legend as $k=>$v){
-            $series[] = [
-                'name' => $v,
-                'type' => 'line',
-                'data' => $moneyData[$v]
-            ];
-        }
-        $xuLineData = ['legend' => $legend, 'date' => $date, 'series' => $series];
+//        $legend = ['MONEY','USDT','EOS','BCH','BTC'];
+//        $series = [];
+//        $date = [];
+//        $firstDay = strtotime(date('Y-m-d', strtotime("-6 month")));
+//        $sql = 'SELECT from_unixtime(createtime,\'%Y-%m-%d %H:%i\') createTime,content from jun_balance
+//WHERE createtime>:firstDay and username="xu";';
+//        $yangBalances = Db::query($sql, ['firstDay' => $firstDay]);
+//        $moneyData = [];
+//        foreach ($yangBalances as $key=>$balance){
+//            $content = json_decode($balance['content'],true);
+//            foreach ($legend as $k=>$v){
+//                $moneyData[$v][]=$content[$v];
+//            }
+//            $date[] = $balance['createTime'];
+//        }
+//        foreach ($legend as $k=>$v){
+//            $series[] = [
+//                'name' => $v,
+//                'type' => 'line',
+//                'data' => $moneyData[$v]
+//            ];
+//        }
+        $xuLineData = ['legend' => $legend, 'date' => [], 'series' => $series];
 
 
 
