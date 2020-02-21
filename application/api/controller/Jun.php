@@ -156,7 +156,7 @@ class Jun extends Api
             } elseif ($needSell > 50) {
 //                $needSell = min($bidPrice[1],min(2000, $needSell));
                 $needSell = min(2000, $needSell);
-                $gateRes = $this->yangGateLib->sell('SERO_SERO', $bidPrice[0], $needSell);
+                $gateRes = $this->yangGateLib->sell('SERO_USDT', $bidPrice[0], $needSell);
                 // 记录last price
                 $this->yangConfigData['sero_last_price'] = $bidPrice[0];
                 $this->yangConfigData['SERO'] -= $needSell;
