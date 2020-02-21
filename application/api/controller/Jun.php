@@ -23,35 +23,32 @@ class Jun extends Api
     private $xuGateLib;
     private $xuConfigData;
     // 杠杆
-    private $balanceRate = 4;
+    private $balanceRate = 5;
     private $xuBalanceRate = 2;
 
 
     public function tong_ji(){
         $this->tong_yang();
-        $this->tong_xu();
+//        $this->tong_xu();
     }
 
     public function tong_yang()
     {
         $balanceData = $this->yangGateLib->get_balances();
         $balance = $balanceData['available'];
+        $locked = $balanceData['locked'];
 
         $priceData = json_decode(Http::get('https://data.gateio.life/api2/1/ticker/eth_usdt'), true);
         $ethPrice = $priceData['last'] * 1;
 
-        $priceData = json_decode(Http::get('https://data.gateio.life/api2/1/ticker/bch_usdt'), true);
+        $priceData = json_decode(Http::get('https://data.gateio.life/api2/1/ticker/sero_usdt'), true);
         $bchPrice = $priceData['last'] * 1;
 
-        $priceData = json_decode(Http::get('https://data.gateio.life/api2/1/ticker/btc_usdt'), true);
-        $btcPrice = $priceData['last'] * 1;
-
         $content = [
-            'MONEY'=>$balance['ETH']*$ethPrice+$balance['BCH']*$bchPrice+$balance['BTC']*$btcPrice+$balance['USDT'],
-            'USDT' => $balance['USDT'],
-            'ETH' => $balance['ETH'],
-            'BCH' => $balance['BCH'],
-            'BTC' => $balance['BTC'],
+            'MONEY'=>($balance['ETH']+$locked['ETH'])*$ethPrice+($balance['SERO']+$locked['SERO'])*$bchPrice+($locked['USDT']+$balance['USDT']),
+            'USDT' => ($locked['USDT']+$balance['USDT']),
+            'ETH' => ($balance['ETH']+$locked['ETH']),
+            'SERO' => ($balance['SERO']+$locked['SERO']),
         ];
 
         $model = new JunBalance();
@@ -136,32 +133,36 @@ class Jun extends Api
 
     public function jun_bch_btc()
     {
-        $priceData = json_decode(Http::get('https://data.gateio.life/api2/1/ticker/bch_btc'), true);
+        $priceData = json_decode(Http::get('https://data.gateio.life/api2/1/ticker/sero_usdt'), true);
         $price = $priceData['last'] * 1;
-        if (abs(($price - $this->yangConfigData['bch_last_price']) / $price) >= 0.01) {
-            $totalMoney = $this->yangConfigData['BCH'] * $price + $this->yangConfigData['BTC'] * 1;
+        if (abs(($price - $this->yangConfigData['sero_last_price']) / $price) >= 0.01) {
+            $totalMoney = $this->yangConfigData['SERO'] * $price + $this->yangConfigData['SERO_USDT'] * 1;
             $halfMoney = $totalMoney / 2;
-            $needBuy = ($halfMoney - $this->yangConfigData['BCH'] * $price) / $price;
-            $needSell = ($halfMoney - $this->yangConfigData['BTC']) / $price;
-            $g = json_decode(Http::get('https://data.gateio.life/api2/1/orderBook/BCH_BTC'), true);
+            $needBuy = ($halfMoney - $this->yangConfigData['SERO'] * $price) / $price;
+            $needSell = ($halfMoney - $this->yangConfigData['SERO_USDT']) / $price;
+            $g = json_decode(Http::get('https://data.gateio.life/api2/1/orderBook/SERO_USDT'), true);
             $bidPrice = $g['bids'][0]; // 买一
             $askPrice = $g['asks'][count($g['asks']) - 1]; // 卖一
-            if ($needBuy > 0.035) {
-                $gateRes = $this->yangGateLib->buy('BCH_BTC', $askPrice[0], min(1, $needBuy));
+            if ($needBuy > 50) {
+//                $needBuy = min($askPrice[1],min(2000, $needBuy));
+                $needBuy = min(min(2000, $needBuy));
+                $gateRes = $this->yangGateLib->buy('SERO_USDT', $askPrice[0], $needBuy);
                 // 记录last price
-                $this->yangConfigData['bch_last_price'] = $askPrice[0];
-                $this->yangConfigData['BCH'] += min(1, $needBuy);
-                $this->yangConfigData['BTC'] -= min(1, $needBuy) * $askPrice[0];
+                $this->yangConfigData['sero_last_price'] = $askPrice[0];
+                $this->yangConfigData['SERO'] += $needBuy;
+                $this->yangConfigData['SERO_USDT'] -= $needBuy * $askPrice[0];
                 $this->updateYangExConfig($this->yangConfigData);
-                trace('jun_bch_btc买单结果：' . json_encode($gateRes), 'error');
-            } elseif ($needSell > 0.035) {
-                $gateRes = $this->yangGateLib->sell('BCH_BTC', $bidPrice[0], min(1, $needSell));
+                trace('jun_sero_usdt买单结果：' . json_encode($gateRes), 'error');
+            } elseif ($needSell > 50) {
+//                $needSell = min($bidPrice[1],min(2000, $needSell));
+                $needSell = min(min(2000, $needSell));
+                $gateRes = $this->yangGateLib->sell('SERO_SERO', $bidPrice[0], $needSell);
                 // 记录last price
-                $this->yangConfigData['bch_last_price'] = $bidPrice[0];
-                $this->yangConfigData['BCH'] -= min(1, $needSell);
-                $this->yangConfigData['BTC'] += min(1, $needSell) * $bidPrice[0];
+                $this->yangConfigData['sero_last_price'] = $bidPrice[0];
+                $this->yangConfigData['SERO'] -= $needSell;
+                $this->yangConfigData['SERO_USDT'] += $needSell * $bidPrice[0];
                 $this->updateYangExConfig($this->yangConfigData);
-                trace('jun_bch_btc卖单结果：' . json_encode($gateRes), 'error');
+                trace('jun_sero_usdt卖单结果：' . json_encode($gateRes), 'error');
             }
         }
     }
@@ -173,13 +174,17 @@ class Jun extends Api
         if (!$result) {
             $balanceData = $this->yangGateLib->get_balances();
             $balance = $balanceData['available'];
+            $priceData = json_decode(Http::get('https://data.gateio.life/api2/1/ticker/eth_usdt'), true);
+            $ethPrice = $priceData['last'] * 1;
+            $priceData = json_decode(Http::get('https://data.gateio.life/api2/1/ticker/sero_usdt'), true);
+            $seroPrice = $priceData['last'] * 1;
             $data = [
                 'eth_last_price' => 1,
-                'bch_last_price' => 1,
+                'sero_last_price' => 1,
                 'ETH' => $balance['ETH'] * $this->balanceRate,
-                'USDT' => $balance['USDT'] * $this->balanceRate,
-                'BTC' => $balance['BTC'] * $this->balanceRate,
-                'BCH' => $balance['BCH'] * $this->balanceRate,
+                'SERO' => $balance['SERO'] * $this->balanceRate,
+                'USDT' => $balance['ETH']*$ethPrice * $this->balanceRate,
+                'SERO_USDT' => $balance['SERO']*$seroPrice * $this->balanceRate,
             ];
             Db::name('config')->insert([
                 'name' => 'ex_config',
