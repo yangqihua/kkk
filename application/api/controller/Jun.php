@@ -112,10 +112,10 @@ class Jun extends Api
 
             $totalMoney = $this->yangConfigData['ETH'] * $price + $this->yangConfigData['USDT'] * 1;
             $halfMoney = $totalMoney / 2;
-            $needBuy = ($halfMoney - $this->yangConfigData['ETH'] * $askPrice[0]) / $askPrice[0];
-            $needSell = ($halfMoney - $this->yangConfigData['USDT']) / $bidPrice[0];
+            $needBuy = ($halfMoney - $this->yangConfigData['ETH'] * $price) / $price;
+            $needSell = ($halfMoney - $this->yangConfigData['USDT']) / $price;
 
-            if ($needBuy > 0.04 && abs(($askPrice[0] - $this->yangConfigData['eth_last_price']) / $askPrice[0]) >= 0.01) {
+            if ($needBuy > 0.04 && (($this->yangConfigData['eth_last_price'] - $askPrice[0]) / $askPrice[0]) >= 0.01) {
                 $gateRes = $this->yangGateLib->buy('ETH_USDT', $askPrice[0], min(1.2, $needBuy));
                 // 记录last price
                 $this->yangConfigData['eth_last_price'] = $askPrice[0];
@@ -147,9 +147,9 @@ class Jun extends Api
 
             $totalMoney = $this->yangConfigData['SERO'] * $price + $this->yangConfigData['SERO_USDT'] * 1;
             $halfMoney = $totalMoney / 2;
-            $needBuy = ($halfMoney - $this->yangConfigData['SERO'] * $askPrice[0]) / $askPrice[0];
-            $needSell = ($halfMoney - $this->yangConfigData['SERO_USDT']) / $bidPrice[0];
-            if ($needBuy > 50 && abs(($askPrice[0] - $this->yangConfigData['sero_last_price']) / $askPrice[0]) >= 0.01) {
+            $needBuy = ($halfMoney - $this->yangConfigData['SERO'] * $price) / $price;
+            $needSell = ($halfMoney - $this->yangConfigData['SERO_USDT']) / $price;
+            if ($needBuy > 50 && (($this->yangConfigData['sero_last_price'] - $askPrice[0]) / $askPrice[0]) >= 0.01) {
 //                $needBuy = min($askPrice[1],min(2000, $needBuy));
                 $needBuy = min(2000, $needBuy);
                 $gateRes = $this->yangGateLib->buy('SERO_USDT', $askPrice[0], $needBuy);
@@ -159,7 +159,7 @@ class Jun extends Api
                 $this->yangConfigData['SERO_USDT'] -= $needBuy * $askPrice[0];
                 $this->updateYangExConfig($this->yangConfigData);
                 trace('jun_sero_usdt买单结果：' . json_encode($gateRes), 'error');
-            } elseif ($needSell > 50 && abs(($bidPrice[0] - $this->yangConfigData['sero_last_price']) / $bidPrice[0]) >= 0.01) {
+            } elseif ($needSell > 50 && (($bidPrice[0] - $this->yangConfigData['sero_last_price']) / $bidPrice[0]) >= 0.01) {
 //                $needSell = min($bidPrice[1],min(2000, $needSell));
                 $needSell = min(2000, $needSell);
                 $gateRes = $this->yangGateLib->sell('SERO_USDT', $bidPrice[0], $needSell);
