@@ -136,14 +136,16 @@ class Jun extends Api
         $priceData = json_decode(Http::get('https://data.gateio.life/api2/1/ticker/sero_usdt'), true);
         $price = $priceData['last'] * 1;
         if (abs(($price - $this->yangConfigData['sero_last_price']) / $price) >= 0.01) {
-            $totalMoney = $this->yangConfigData['SERO'] * $price + $this->yangConfigData['SERO_USDT'] * 1;
-            $halfMoney = $totalMoney / 2;
-            $needBuy = ($halfMoney - $this->yangConfigData['SERO'] * $price) / $price;
-            $needSell = ($halfMoney - $this->yangConfigData['SERO_USDT']) / $price;
+
             $g = json_decode(Http::get('https://data.gateio.life/api2/1/orderBook/SERO_USDT'), true);
             $bidPrice = $g['bids'][0]; // 买一
             $askPrice = $g['asks'][count($g['asks']) - 1]; // 卖一
-            if ($needBuy > 50) {
+
+            $totalMoney = $this->yangConfigData['SERO'] * $price + $this->yangConfigData['SERO_USDT'] * 1;
+            $halfMoney = $totalMoney / 2;
+            $needBuy = ($halfMoney - $this->yangConfigData['SERO'] * $askPrice[0]) / $askPrice[0];
+            $needSell = ($halfMoney - $this->yangConfigData['SERO_USDT']) / $bidPrice[0];
+            if ($needBuy > 50 && abs(($askPrice[0] - $this->yangConfigData['sero_last_price']) / $askPrice[0]) >= 0.01) {
 //                $needBuy = min($askPrice[1],min(2000, $needBuy));
                 $needBuy = min(2000, $needBuy);
                 $gateRes = $this->yangGateLib->buy('SERO_USDT', $askPrice[0], $needBuy);
@@ -153,7 +155,7 @@ class Jun extends Api
                 $this->yangConfigData['SERO_USDT'] -= $needBuy * $askPrice[0];
                 $this->updateYangExConfig($this->yangConfigData);
                 trace('jun_sero_usdt买单结果：' . json_encode($gateRes), 'error');
-            } elseif ($needSell > 50) {
+            } elseif ($needSell > 50  && abs(($bidPrice[0] - $this->yangConfigData['sero_last_price']) / $bidPrice[0]) >= 0.01) {
 //                $needSell = min($bidPrice[1],min(2000, $needSell));
                 $needSell = min(2000, $needSell);
                 $gateRes = $this->yangGateLib->sell('SERO_USDT', $bidPrice[0], $needSell);
