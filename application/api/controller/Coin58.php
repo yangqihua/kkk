@@ -36,6 +36,13 @@ class Coin58 extends Api
     }
 
 
+    public function place_plan(){
+        for($i=0;$i<8;$i++){
+            $this->place();
+            sleep(6);
+        }
+    }
+
     public function place(){
         $lastPrice = $this->get58Config()['last_price'];
         $balance = $this->balance();
