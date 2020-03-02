@@ -47,12 +47,12 @@ class Coin58 extends Api
         $lastPrice = $this->get58Config()['last_price'];
         $balance = $this->balance();
         $ticker = $this->get_ticker();
-        if(($lastPrice - $ticker['ask'][0])/$ticker['ask'][0]>0.002){
+        if(($lastPrice - $ticker['ask'][0])/$ticker['ask'][0]>0.001){
             $amount = round(($balance['usdt']['available']/$ticker['ask'][0])*0.2,2);
             $orderId = $this->order(1,$ticker['ask'][0],$amount);
             $this->update58Config(['last_price'=>$ticker['ask'][0]]);
             trace('买入：[' . $ticker['ask'][0].','.$amount.'],orderId:'.$orderId, 'error');
-        }else if(($ticker['bid'][0]-$lastPrice)/$ticker['bid'][0]>0.002){
+        }else if(($ticker['bid'][0]-$lastPrice)/$ticker['bid'][0]>0.001){
             $amount = round($balance['eos']['available']*0.2,2);
             $orderId = $this->order(2,$ticker['ask'][0],$amount);
             $this->update58Config(['last_price'=>$ticker['bid'][0]]);
