@@ -50,8 +50,8 @@ class Coin58 extends Api
     {
         $config = $this->get58Config();
         $lastPrice = $config['last_price'];
-        $balance = $this->balance();
         $ticker = $this->get_ticker();
+        $balance = $this->balance();
         // 买入
         if (($lastPrice - $ticker['ask'][0]) / $ticker['ask'][0] > 0.001) {
 
@@ -59,7 +59,7 @@ class Coin58 extends Api
             $halfMoney = $totalMoney / 2;
             $needBuy = ($halfMoney - $config['eos'] * $ticker['ask'][0]) / $ticker['ask'][0];
             $amount = round($needBuy, 2);
-            if($amount>=0.1){
+            if($amount>=0.1 && $balance['usdt']['available']>=$ticker['ask'][0]*$amount){
                 $orderId = $this->order(1, $ticker['ask'][0], $amount);
                 $config['last_price'] = $ticker['ask'][0];
                 $config['usdt'] = $config['usdt'] - $amount*$ticker['ask'][0];
@@ -74,7 +74,7 @@ class Coin58 extends Api
             $halfMoney = $totalMoney / 2;
             $needSell = ($halfMoney - $config['usdt']) / $ticker['bid'][0];
             $amount = round($needSell, 2);
-            if($amount>=0.1) {
+            if($amount>=0.1 && $balance['eos']['available']>=$amount) {
                 $orderId = $this->order(2, $ticker['bid'][0], $amount);
                 $config['last_price'] = $ticker['bid'][0];
                 $config['usdt'] = $config['usdt'] + $amount*$ticker['bid'][0];
