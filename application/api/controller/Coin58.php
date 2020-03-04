@@ -23,6 +23,8 @@ class Coin58 extends Api
     private $secret = '';
     private $access_token = '';
 
+    private $moneyRate = 5;
+
     // 1.行情orderbook
     // 2.账户余额
     // 3.下单接口
@@ -36,34 +38,57 @@ class Coin58 extends Api
     }
 
 
-    public function place_plan(){
-        for($i=0;$i<8;$i++){
+    public function place_plan()
+    {
+        for ($i = 0; $i < 8; $i++) {
             $this->place();
             sleep(6);
         }
     }
 
-    public function place(){
-        $lastPrice = $this->get58Config()['last_price'];
+    public function place()
+    {
+        $config = $this->get58Config();
+        $lastPrice = $config['last_price'];
         $balance = $this->balance();
         $ticker = $this->get_ticker();
-        if(($lastPrice - $ticker['ask'][0])/$ticker['ask'][0]>0.001){
-            $amount = round(($balance['usdt']['available']/$ticker['ask'][0])*0.2,2);
-            $orderId = $this->order(1,$ticker['ask'][0],$amount);
-            $this->update58Config(['last_price'=>$ticker['ask'][0]]);
-            trace('买入：[' . $ticker['ask'][0].','.$amount.'],orderId:'.$orderId, 'error');
-        }else if(($ticker['bid'][0]-$lastPrice)/$ticker['bid'][0]>0.001){
-            $amount = round($balance['eos']['available']*0.2,2);
-            $orderId = $this->order(2,$ticker['ask'][0],$amount);
-            $this->update58Config(['last_price'=>$ticker['bid'][0]]);
-            trace('卖出：[' . $ticker['bid'][0].','.$amount.'],orderId:'.$orderId, 'error');
+        // 买入
+        if (($lastPrice - $ticker['ask'][0]) / $ticker['ask'][0] > 0.001) {
+
+            $totalMoney = $config['eos'] * $ticker['ask'][0] + $config['usdt'] * 1;
+            $halfMoney = $totalMoney / 2;
+            $needBuy = ($halfMoney - $config['eos'] * $ticker['ask'][0]) / $ticker['ask'][0];
+            $amount = round($needBuy, 2);
+            if($amount>=0.1){
+                $orderId = $this->order(1, $ticker['ask'][0], $amount);
+                $config['last_price'] = $ticker['ask'][0];
+                $config['usdt'] = $config['usdt'] - $amount*$ticker['ask'][0];
+                $config['eos'] = $config['eos'] + $amount;
+                $this->update58Config($config);
+                trace('买入：[' . $ticker['ask'][0] . ',' . $amount . '],orderId:' . $orderId, 'error');
+            }
+        }
+        // 卖出
+        else if (($ticker['bid'][0] - $lastPrice) / $ticker['bid'][0] > 0.001) {
+            $totalMoney = $config['eos'] * $ticker['bid'][0] + $config['usdt'] * 1;
+            $halfMoney = $totalMoney / 2;
+            $needSell = ($halfMoney - $config['usdt']) / $ticker['bid'][0];
+            $amount = round($needSell, 2);
+            if($amount>=0.1) {
+                $orderId = $this->order(2, $ticker['bid'][0], $amount);
+                $config['last_price'] = $ticker['bid'][0];
+                $config['usdt'] = $config['usdt'] + $amount*$ticker['bid'][0];
+                $config['eos'] = $config['eos'] - $amount;
+                $this->update58Config($config);
+                trace('卖出：[' . $ticker['bid'][0] . ',' . $amount . '],orderId:' . $orderId, 'error');
+            }
         }
         $this->success('请求成功');
     }
 
 
     // 1买入，2卖出
-    public function order($side,$price,$amount)
+    public function order($side, $price, $amount)
     {
         $url = 'https://api.58ex.com/orders/place';
         $requestData = [
@@ -76,7 +101,7 @@ class Coin58 extends Api
             'size' => $amount,
             'timeInForce' => 1,
             'postOnly' => 0,
-            'tradePass' =>''
+            'tradePass' => ''
         ];
         $header = [
             'ACCESS_TOKEN:' . $this->access_token,
@@ -119,14 +144,20 @@ class Coin58 extends Api
         $config = new Config();
         $result = $config->where("name", "58_config")->find();
         if (!$result) {
+            $balance = $this->balance();
+            $data = [
+                'last_price' => 0,
+                'usdt' => $balance['usdt']['available']*$this->moneyRate,
+                'eos' => $balance['eos']['available']*$this->moneyRate,
+            ];
             Db::name('config')->insert([
                 'name' => '58_config',
                 'group' => 'dictionary',
                 'type' => 'string',
-                'content' => json_encode(['last_price'=>0]),
-                'value' => json_encode(['last_price'=>0])
+                'content' => json_encode($data),
+                'value' => json_encode($data)
             ]);
-            return ['last_price'=>0];
+            return $data;
         }
         return json_decode($result['value'], true);
     }
