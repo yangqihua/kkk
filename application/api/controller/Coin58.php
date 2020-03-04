@@ -53,36 +53,36 @@ class Coin58 extends Api
         $ticker = $this->get_ticker();
         $balance = $this->balance();
         // 买入
-        if (($lastPrice - $ticker['ask'][0]) / $ticker['ask'][0] > 0.001) {
+        if (abs(($lastPrice - $ticker['ask'][0]) / $ticker['ask'][0]) > 0.001) {
 
             $totalMoney = $config['eos'] * $ticker['ask'][0] + $config['usdt'] * 1;
             $halfMoney = $totalMoney / 2;
             $needBuy = ($halfMoney - $config['eos'] * $ticker['ask'][0]) / $ticker['ask'][0];
             $amount = round($needBuy, 2);
-            if($amount>=0.1 && $balance['usdt']['available']>=$ticker['ask'][0]*$amount){
+            if ($amount >= 0.1 && $balance['usdt']['available'] >= $ticker['ask'][0] * $amount) {
                 $orderId = $this->order(1, $ticker['ask'][0], $amount);
                 $config['last_price'] = $ticker['ask'][0];
-                $config['usdt'] = $config['usdt'] - $amount*$ticker['ask'][0];
+                $config['usdt'] = $config['usdt'] - $amount * $ticker['ask'][0];
                 $config['eos'] = $config['eos'] + $amount;
                 $this->update58Config($config);
                 trace('买入：[' . $ticker['ask'][0] . ',' . $amount . '],orderId:' . $orderId, 'error');
             }
-        }
-        // 卖出
-        else if (($ticker['bid'][0] - $lastPrice) / $ticker['bid'][0] > 0.001) {
+
+            // 卖出
             $totalMoney = $config['eos'] * $ticker['bid'][0] + $config['usdt'] * 1;
             $halfMoney = $totalMoney / 2;
             $needSell = ($halfMoney - $config['usdt']) / $ticker['bid'][0];
             $amount = round($needSell, 2);
-            if($amount>=0.1 && $balance['eos']['available']>=$amount) {
+            if ($amount >= 0.1 && $balance['eos']['available'] >= $amount) {
                 $orderId = $this->order(2, $ticker['bid'][0], $amount);
                 $config['last_price'] = $ticker['bid'][0];
-                $config['usdt'] = $config['usdt'] + $amount*$ticker['bid'][0];
+                $config['usdt'] = $config['usdt'] + $amount * $ticker['bid'][0];
                 $config['eos'] = $config['eos'] - $amount;
                 $this->update58Config($config);
                 trace('卖出：[' . $ticker['bid'][0] . ',' . $amount . '],orderId:' . $orderId, 'error');
             }
         }
+
         $this->success('请求成功');
     }
 
@@ -129,7 +129,7 @@ class Coin58 extends Api
             'ACCESS_TOKEN:' . $this->access_token,
         ];
         $orderId = json_decode(Http::post($url, $requestData, [CURLOPT_HTTPHEADER => $header]), true);
-        $this->success('请求成功',$orderId);
+        $this->success('请求成功', $orderId);
     }
 
     public function get_ticker()
@@ -169,8 +169,8 @@ class Coin58 extends Api
             $balance = $this->balance();
             $data = [
                 'last_price' => 0,
-                'usdt' => $balance['usdt']['available']*$this->moneyRate,
-                'eos' => $balance['eos']['available']*$this->moneyRate,
+                'usdt' => $balance['usdt']['available'] * $this->moneyRate,
+                'eos' => $balance['eos']['available'] * $this->moneyRate,
             ];
             Db::name('config')->insert([
                 'name' => '58_config',
