@@ -110,6 +110,28 @@ class Coin58 extends Api
         return $orderId;
     }
 
+    public function test_order($side, $price, $amount)
+    {
+        $url = 'https://api.58ex.com/orders/place';
+        $requestData = [
+            'stp' => 1,
+            'orderFrom' => 0,
+            'productId' => 1441800,
+            'type' => 1,
+            'side' => $side, // 1买入，2卖出
+            'price' => $price,
+            'size' => $amount,
+            'timeInForce' => 1,
+            'postOnly' => 0,
+            'tradePass' => ''
+        ];
+        $header = [
+            'ACCESS_TOKEN:' . $this->access_token,
+        ];
+        $orderId = json_decode(Http::post($url, $requestData, [CURLOPT_HTTPHEADER => $header]), true);
+        $this->success('请求成功',$orderId);
+    }
+
     public function get_ticker()
     {
         $url = $this->baseUrl . '/v1/spot/order_book?symbol=eos_usdt&limit=100';
