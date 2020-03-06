@@ -171,7 +171,7 @@ class Coin58 extends Api
             $data = [
                 'last_price' => 0,
                 'eos' => $balance['eos']['available'] * $this->moneyRate,
-                'usdt' => $ticker['ask'][0] * $this->moneyRate,
+                'usdt' => $balance['eos']['available'] *$ticker['ask'][0] * $this->moneyRate,
             ];
             Db::name('config')->insert([
                 'name' => '58_config',
