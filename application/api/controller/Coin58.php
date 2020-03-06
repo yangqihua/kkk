@@ -23,7 +23,7 @@ class Coin58 extends Api
     private $secret = '';
     private $access_token = '';
 
-    private $moneyRate = 3;
+    private $moneyRate = 8;
 
     // 1.行情orderbook
     // 2.账户余额
@@ -167,10 +167,11 @@ class Coin58 extends Api
         $result = $config->where("name", "58_config")->find();
         if (!$result) {
             $balance = $this->balance();
+            $ticker = $this->get_ticker();
             $data = [
                 'last_price' => 0,
-                'usdt' => $balance['usdt']['available'] * $this->moneyRate,
                 'eos' => $balance['eos']['available'] * $this->moneyRate,
+                'usdt' => $ticker['ask'][0] * $this->moneyRate,
             ];
             Db::name('config')->insert([
                 'name' => '58_config',
