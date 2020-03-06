@@ -23,7 +23,7 @@ class Coin58 extends Api
     private $secret = '';
     private $access_token = '';
 
-    private $moneyRate = 12;
+    private $moneyRate = 20;
 
     // 1.行情orderbook
     // 2.账户余额
