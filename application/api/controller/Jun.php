@@ -22,7 +22,7 @@ class Jun extends Api
     private $pairs = [
         "yang" => [
             'sero_usdt' => ['coin' => 'sero', 'money' => 'usdt', 'rate' => 5, 'condition' => 0.01, 'min' => 200, 'max' => 3000],
-            'xtz3l_usdt' => ['coin' => 'xtz3l', 'money' => 'usdt', 'rate' => 4, 'condition' => 0.012, 'min' => 40, 'max' => 500],
+            'xtz3l_usdt' => ['coin' => 'xtz3l', 'money' => 'usdt', 'rate' => 4, 'condition' => 0.01, 'min' => 40, 'max' => 500],
         ]
     ];
 
@@ -168,22 +168,21 @@ class Jun extends Api
 
     public function tong_yang()
     {
-        $balanceData = $this->yangGateLib->get_balances();
+        $exchange = $this->getExchange('yang');
+        $balanceData = $exchange->get_balances();
         $balance = $balanceData['available'];
         $locked = $balanceData['locked'];
 
-        $priceData = json_decode(Http::get('https://data.gateio.life/api2/1/ticker/eth_usdt'), true);
-        $ethPrice = $priceData['last'] * 1;
-
-        $priceData = json_decode(Http::get('https://data.gateio.life/api2/1/ticker/sero_usdt'), true);
-        $bchPrice = $priceData['last'] * 1;
-
-        $content = [
-            'MONEY' => ($balance['ETH'] + $locked['ETH']) * $ethPrice + ($balance['SERO'] + $locked['SERO']) * $bchPrice + ($locked['USDT'] + $balance['USDT']),
-            'USDT' => ($locked['USDT'] + $balance['USDT']),
-            'ETH' => ($balance['ETH'] + $locked['ETH']),
-            'SERO' => ($balance['SERO'] + $locked['SERO']),
-        ];
+        $pairs = $this->pairs['yang'];
+        $content = ['MONEY' => 0];
+        foreach ($pairs as $coin => $money) {
+            $priceData = json_decode(Http::get('https://data.gateio.life/api2/1/ticker/' . $money['coin'] . '_' . $money['money']), true);
+            $price = $priceData['last'] * 1;
+            $content[strtoupper($money['coin'])] = $locked[strtoupper($money['coin'])] + $balance[strtoupper($money['coin'])];
+            $content['MONEY'] += $locked[strtoupper($money['coin'])] + $balance[strtoupper($money['coin'])] * $price;
+        }
+        $content['USDT'] = ($locked['USDT'] + $balance['USDT']);
+        $content['MONEY'] += $content['USDT'];
 
         $model = new JunBalance();
         $model->save([

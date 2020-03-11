@@ -61,7 +61,7 @@ class Dashboard extends Backend
     public function index()
     {
 
-        $legend = ['MONEY','USDT','ETH','SERO'];
+        $legend = ['MONEY','USDT','XTZ3L','SERO'];
         $series = [];
         $date = [];
         $firstDay = strtotime(date('Y-m-d', strtotime("-6 month")));
