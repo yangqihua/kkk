@@ -112,6 +112,17 @@ class Jun extends Api
             $askPrice = $g['asks'][count($g['asks']) - 1]; // 卖一
 
             $price = $askPrice[0];
+
+            if($money['coin']=='sero'){
+                if($price*1<0.0715){
+                    return;
+                }
+            }else{
+                if($price*1<0.29){
+                    return;
+                }
+            }
+
             // 买
             if (($pairConfig['last_price'] - $price) / $price >= $money['condition']) {
                 $totalMoney = $pairConfig[$money['coin']] * $price + $pairConfig[$money['money']] * 1;
