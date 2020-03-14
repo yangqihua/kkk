@@ -21,8 +21,8 @@ class Jun extends Api
 
     private $pairs = [
         "yang" => [
-            'sero_usdt' => ['coin' => 'sero', 'money' => 'usdt', 'rate' => 5, 'condition' => 0.01, 'min' => 200, 'max' => 3000],
-            'xtz3l_usdt' => ['coin' => 'xtz3l', 'money' => 'usdt', 'rate' => 4, 'condition' => 0.01, 'min' => 40, 'max' => 500],
+            'bsv3l_usdt' => ['coin' => 'bsv3l', 'money' => 'usdt', 'rate' => 3, 'condition' => 0.01, 'min' => 200, 'max' => 3000],
+            'xtz3l_usdt' => ['coin' => 'xtz3l', 'money' => 'usdt', 'rate' => 3, 'condition' => 0.01, 'min' => 200, 'max' => 3000],
         ]
     ];
 
@@ -53,6 +53,7 @@ class Jun extends Api
                 $price = $priceData['last'] * 1;
                 $data[$coin] = [
                     'last_price' => $price,
+                    'init_price' => $price,
                     $money['coin'] => $balance[strtoupper($money['coin'])] * $money['rate'],
                     $money['money'] => $balance[strtoupper($money['coin'])] * $price * $money['rate'],
                 ];
@@ -112,17 +113,9 @@ class Jun extends Api
             $askPrice = $g['asks'][count($g['asks']) - 1]; // 卖一
 
             $price = $askPrice[0];
-
-            if($money['coin']=='sero'){
-                if($price*1<0.0715){
-                    return;
-                }
-            }else{
-                if($price*1<0.29){
-                    return;
-                }
+            if (abs(($price - $pairConfig['init_price']) / $price > 0.35)) {
+                return;
             }
-
             // 买
             if (($pairConfig['last_price'] - $price) / $price >= $money['condition']) {
                 $totalMoney = $pairConfig[$money['coin']] * $price + $pairConfig[$money['money']] * 1;
