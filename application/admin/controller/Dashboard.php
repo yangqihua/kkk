@@ -61,12 +61,12 @@ class Dashboard extends Backend
     public function index()
     {
 
-        $legend = ['MONEY','USDT','XTZ3L','SERO'];
+        $legend = ['MONEY','USDT','XTZ3L','BSV3L'];
         $series = [];
         $date = [];
         $firstDay = strtotime(date('Y-m-d', strtotime("-6 month")));
         $sql = 'SELECT from_unixtime(createtime,\'%Y-%m-%d %H:%i\') createTime,content from jun_balance 
-WHERE createtime>:firstDay and username="yang";';
+WHERE id>8973 and createtime>:firstDay and username="yang";';
         $yangBalances = Db::query($sql, ['firstDay' => $firstDay]);
         $moneyData = [];
         foreach ($yangBalances as $key=>$balance){
