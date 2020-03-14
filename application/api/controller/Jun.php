@@ -157,9 +157,11 @@ class Jun extends Api
 
     public function jun_cang()
     {
-        $this->jun('yang');
-        sleep(25);
-        $this->jun('yang');
+        // 一分钟8次尝试
+        for($i=0;$i<8;$i++){
+            $this->jun('yang');
+            sleep(6.5);
+        }
         $this->success('请求成功');
     }
 
