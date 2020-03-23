@@ -124,6 +124,9 @@ class Jun extends Api
 
                 if ($needBuy > $money['min']) {
                     $gateRes = $exchange->buy(strtoupper($money['coin'] . '_' . $money['money']), $price, min($money['max'], $needBuy));
+                    if (!$gateRes['result']) {
+                        return;
+                    }
                     // 记录last price
                     $pairConfig['last_price'] = $price;
                     $pairConfig[$money['coin']] += min($money['max'], $needBuy);
@@ -136,20 +139,23 @@ class Jun extends Api
             $price = $bidPrice[0];
             // 卖
             if (($price - $pairConfig['last_price']) / $price >= $money['condition']) {
-                $totalMoney = $pairConfig[$money['coin']] * $price + $pairConfig[$money['money']] * 1;
-                $halfMoney = $totalMoney / 2;
-                $needSell = ($halfMoney - $pairConfig[$money['money']]) / $price;
-
-                if ($needSell > $money['min']) {
-                    $gateRes = $exchange->sell(strtoupper($money['coin'] . '_' . $money['money']), $price, min($money['max'], $needSell));
-                    // 记录last price
-                    $pairConfig['last_price'] = $price;
-                    $pairConfig[$money['coin']] -= min($money['max'], $needSell);
-                    $pairConfig[$money['money']] += min($money['max'], $needSell) * $price;
-                    $config[$coin] = $pairConfig;
-                    $this->updateConfig($user, $config);
-                    trace($user . ' ' . $coin . '卖单结果：' . json_encode($gateRes), 'error');
-                }
+//                $totalMoney = $pairConfig[$money['coin']] * $price + $pairConfig[$money['money']] * 1;
+//                $halfMoney = $totalMoney / 2;
+//                $needSell = ($halfMoney - $pairConfig[$money['money']]) / $price;
+//
+//                if ($needSell > $money['min']) {
+//                    $gateRes = $exchange->sell(strtoupper($money['coin'] . '_' . $money['money']), $price, min($money['max'], $needSell));
+//                    if (!$gateRes['result']) {
+//                        return;
+//                    }
+//                    // 记录last price
+//                    $pairConfig['last_price'] = $price;
+//                    $pairConfig[$money['coin']] -= min($money['max'], $needSell);
+//                    $pairConfig[$money['money']] += min($money['max'], $needSell) * $price;
+//                    $config[$coin] = $pairConfig;
+//                    $this->updateConfig($user, $config);
+//                    trace($user . ' ' . $coin . '卖单结果：' . json_encode($gateRes), 'error');
+//                }
             }
         }
     }
@@ -158,7 +164,7 @@ class Jun extends Api
     public function jun_cang()
     {
         // 一分钟8次尝试
-        for($i=0;$i<8;$i++){
+        for ($i = 0; $i < 8; $i++) {
             $this->jun('yang');
             sleep(6.5);
         }
