@@ -22,7 +22,7 @@ class Jun extends Api
     private $pairs = [
         "yang" => [
 //            'bsv3l_usdt' => ['coin' => 'bsv3l', 'money' => 'usdt', 'rate' => 3, 'condition' => 0.01, 'min' => 200, 'max' => 3000],
-            'xtz3l_usdt' => ['coin' => 'xtz3l', 'money' => 'usdt', 'rate' => 3, 'condition' => 0.02, 'min' => 200, 'max' => 3000],
+            'xtz3l_usdt' => ['coin' => 'xtz3l', 'money' => 'usdt', 'rate' => 2, 'condition' => 0.02, 'min' => 200, 'max' => 3000],
         ]
     ];
 
@@ -139,23 +139,23 @@ class Jun extends Api
             $price = $bidPrice[0];
             // 卖
             if (($price - $pairConfig['last_price']) / $price >= $money['condition']) {
-//                $totalMoney = $pairConfig[$money['coin']] * $price + $pairConfig[$money['money']] * 1;
-//                $halfMoney = $totalMoney / 2;
-//                $needSell = ($halfMoney - $pairConfig[$money['money']]) / $price;
-//
-//                if ($needSell > $money['min']) {
-//                    $gateRes = $exchange->sell(strtoupper($money['coin'] . '_' . $money['money']), $price, min($money['max'], $needSell));
-//                    if (!$gateRes['result']) {
-//                        return;
-//                    }
-//                    // 记录last price
-//                    $pairConfig['last_price'] = $price;
-//                    $pairConfig[$money['coin']] -= min($money['max'], $needSell);
-//                    $pairConfig[$money['money']] += min($money['max'], $needSell) * $price;
-//                    $config[$coin] = $pairConfig;
-//                    $this->updateConfig($user, $config);
-//                    trace($user . ' ' . $coin . '卖单结果：' . json_encode($gateRes), 'error');
-//                }
+                $totalMoney = $pairConfig[$money['coin']] * $price + $pairConfig[$money['money']] * 1;
+                $halfMoney = $totalMoney / 2;
+                $needSell = ($halfMoney - $pairConfig[$money['money']]) / $price;
+
+                if ($needSell > $money['min']) {
+                    $gateRes = $exchange->sell(strtoupper($money['coin'] . '_' . $money['money']), $price, min($money['max'], $needSell));
+                    if (!$gateRes['result']) {
+                        return;
+                    }
+                    // 记录last price
+                    $pairConfig['last_price'] = $price;
+                    $pairConfig[$money['coin']] -= min($money['max'], $needSell);
+                    $pairConfig[$money['money']] += min($money['max'], $needSell) * $price;
+                    $config[$coin] = $pairConfig;
+                    $this->updateConfig($user, $config);
+                    trace($user . ' ' . $coin . '卖单结果：' . json_encode($gateRes), 'error');
+                }
             }
         }
     }
