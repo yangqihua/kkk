@@ -37,8 +37,9 @@ class Jun extends Api
 
     private function getExchange($user)
     {
-        $key = \config('exchange_key.' . $user . '.key');
-        $secret = \config('exchange_key.' . $user . '.secret');
+        $password = \config('exchange_key.' . $user);
+        $key = $password['key'];
+        $secret = $password['secret'];
         return new GateLib($key, $secret);
     }
 
