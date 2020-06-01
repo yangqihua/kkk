@@ -22,12 +22,12 @@ class Jun extends Api
     private $pairs = [
         "yang" => [
 //            'bsv3l_usdt' => ['coin' => 'bsv3l', 'money' => 'usdt', 'rate' => 3, 'condition' => 0.01, 'min' => 200, 'max' => 3000],
-            'xtz3l_usdt' => ['coin' => 'xtz3l', 'money' => 'usdt', 'rate' => 2, 'condition' => 0.012, 'min' => 100, 'max' => 3000],
+            'eos_usdt' => ['coin' => 'eos', 'money' => 'usdt', 'rate' => 2, 'condition' => 0.012, 'min' => 1, 'max' => 300],
         ],
-        "xu" => [
-//            'bsv3l_usdt' => ['coin' => 'bsv3l', 'money' => 'usdt', 'rate' => 3, 'condition' => 0.01, 'min' => 200, 'max' => 3000],
-            'btc3l_usdt' => ['coin' => 'btc3l', 'money' => 'usdt', 'rate' => 2, 'condition' => 0.01, 'min' => 100, 'max' => 3000],
-        ]
+//        "xu" => [
+////            'bsv3l_usdt' => ['coin' => 'bsv3l', 'money' => 'usdt', 'rate' => 3, 'condition' => 0.01, 'min' => 200, 'max' => 3000],
+//            'btc3l_usdt' => ['coin' => 'btc3l', 'money' => 'usdt', 'rate' => 2, 'condition' => 0.01, 'min' => 100, 'max' => 3000],
+//        ]
     ];
 
     public function __construct()
@@ -171,7 +171,7 @@ class Jun extends Api
         // 一分钟8次尝试
         for ($i = 0; $i < 8; $i++) {
             $this->jun('yang');
-            $this->jun('xu');
+//            $this->jun('xu');
             sleep(6);
         }
         $this->success('请求成功');
