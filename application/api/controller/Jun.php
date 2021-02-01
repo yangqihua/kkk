@@ -195,7 +195,7 @@ class Jun extends Api
                         'user' => $user,
                         'market' => $money['coin'] . '_' . $money['money'],
                         'price' => $price,
-                        'direction' => 'buy',
+                        'direction' => 'sell',
                         'amount' => min($money['max'], $needSell),
                         'coin_before' => $coin_before,
                         'coin_after' => $pairConfig[$money['coin']],
