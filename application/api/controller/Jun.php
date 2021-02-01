@@ -4,6 +4,7 @@ namespace app\api\controller;
 
 use app\admin\model\ban\Bg;
 use app\admin\model\JunBalance;
+use app\admin\model\JunHistory;
 use app\api\library\GateLib;
 use app\common\controller\Api;
 use app\common\model\Config;
@@ -19,10 +20,12 @@ class Jun extends Api
     protected $noNeedRight = ['*'];
     private $yangGateLib;
 
-    private $pairs = [
+    public $pairs = [
         "yang" => [
 //            'bsv3l_usdt' => ['coin' => 'bsv3l', 'money' => 'usdt', 'rate' => 3, 'condition' => 0.01, 'min' => 200, 'max' => 3000],
-            'eos_usdt' => ['coin' => 'eos', 'money' => 'usdt', 'rate' => 2, 'condition' => 0.012, 'min' => 1, 'max' => 300],
+            'doge_usdt' => ['coin' => 'eos', 'money' => 'usdt', 'rate' => 2, 'condition' => 0.015, 'min' => 2, 'max' => 30000],
+            'bch_usdt' => ['coin' => 'bch', 'money' => 'usdt', 'rate' => 2, 'condition' => 0.012, 'min' => 0.01, 'max' => 3],
+            'crv_usdt' => ['coin' => 'eos', 'money' => 'usdt', 'rate' => 1.5, 'condition' => 0.015, 'min' => 0.1, 'max' => 300],
         ],
 //        "xu" => [
 ////            'bsv3l_usdt' => ['coin' => 'bsv3l', 'money' => 'usdt', 'rate' => 3, 'condition' => 0.01, 'min' => 200, 'max' => 3000],
@@ -111,6 +114,8 @@ class Jun extends Api
         $pairs = $this->pairs[$user];
         $config = $this->getConfig($user);
         $exchange = $this->getExchange($user);
+
+        $junHistory = new JunHistory();
         foreach ($pairs as $coin => $money) {
             $pairConfig = $config[$coin];
             $g = json_decode(Http::get('https://data.gateio.life/api2/1/orderBook/' . $money['coin'] . '_' . $money['money']), true);
@@ -118,11 +123,13 @@ class Jun extends Api
             $askPrice = $g['asks'][count($g['asks']) - 1]; // 卖一
 
             $price = $askPrice[0];
-            if (abs(($price - $pairConfig['init_price']) / $price > 0.35)) {
-                return;
-            }
+            // 没有算手续费
             // 买
             if (($pairConfig['last_price'] - $price) / $price >= $money['condition']) {
+                // 跌了50%，没有买的必要了
+                if (abs(($price - $pairConfig['init_price']) / $price > 0.5)) {
+                    return;
+                }
                 $totalMoney = $pairConfig[$money['coin']] * $price + $pairConfig[$money['money']] * 1;
                 $halfMoney = $totalMoney / 2;
                 $needBuy = ($halfMoney - $pairConfig[$money['coin']] * $price) / $price;
@@ -132,6 +139,10 @@ class Jun extends Api
                     if (!$gateRes['result']) {
                         return;
                     }
+                    $coin_before = $pairConfig[$money['coin']];
+                    $money_before = $pairConfig[$money['money']];
+
+                    $cap_before = $totalMoney;
                     // 记录last price
                     $pairConfig['last_price'] = $price;
                     $pairConfig[$money['coin']] += min($money['max'], $needBuy);
@@ -139,6 +150,20 @@ class Jun extends Api
                     $config[$coin] = $pairConfig;
                     $this->updateConfig($user, $config);
                     trace($user . ' ' . $coin . '买单结果：' . json_encode($gateRes), 'error');
+                    $cap_after = $pairConfig[$money['coin']] * $price + $pairConfig[$money['money']] * 1;
+                    $junHistory->save([
+                        'user' => $user,
+                        'market' => $money['coin'] . '_' . $money['money'],
+                        'price' => $price,
+                        'direction' => 'buy',
+                        'amount' => min($money['max'], $needBuy),
+                        'coin_before' => $coin_before,
+                        'coin_after' => $pairConfig[$money['coin']],
+                        'money_before' => $money_before,
+                        'money_after' => $pairConfig[$money['money']],
+                        'cap_before' => $cap_before,
+                        'cap_after' => $cap_after,
+                    ]);
                 }
             }
             $price = $bidPrice[0];
@@ -153,6 +178,11 @@ class Jun extends Api
                     if (!$gateRes['result']) {
                         return;
                     }
+                    $coin_before = $pairConfig[$money['coin']];
+                    $money_before = $pairConfig[$money['money']];
+
+                    $cap_before = $totalMoney;
+
                     // 记录last price
                     $pairConfig['last_price'] = $price;
                     $pairConfig[$money['coin']] -= min($money['max'], $needSell);
@@ -160,6 +190,20 @@ class Jun extends Api
                     $config[$coin] = $pairConfig;
                     $this->updateConfig($user, $config);
                     trace($user . ' ' . $coin . '卖单结果：' . json_encode($gateRes), 'error');
+                    $cap_after = $pairConfig[$money['coin']] * $price + $pairConfig[$money['money']] * 1;
+                    $junHistory->save([
+                        'user' => $user,
+                        'market' => $money['coin'] . '_' . $money['money'],
+                        'price' => $price,
+                        'direction' => 'buy',
+                        'amount' => min($money['max'], $needSell),
+                        'coin_before' => $coin_before,
+                        'coin_after' => $pairConfig[$money['coin']],
+                        'money_before' => $money_before,
+                        'money_after' => $pairConfig[$money['money']],
+                        'cap_before' => $cap_before,
+                        'cap_after' => $cap_after,
+                    ]);
                 }
             }
         }
