@@ -118,6 +118,7 @@ class Jun extends Api
         $junHistory = new JunHistory();
         foreach ($pairs as $coin => $money) {
             $pairConfig = $config[$coin];
+            $market = $money['coin'] . '_' . $money['money'];
             $g = json_decode(Http::get('https://data.gateio.life/api2/1/orderBook/' . $money['coin'] . '_' . $money['money']), true);
             $bidPrice = $g['bids'][0]; // 买一
             $askPrice = $g['asks'][count($g['asks']) - 1]; // 卖一
@@ -138,6 +139,7 @@ class Jun extends Api
                 if ($needBuy > $money['min']) {
                     $gateRes = $exchange->buy(strtoupper($money['coin'] . '_' . $money['money']), $price, min($money['max'], $needBuy));
                     if (!$gateRes['result']) {
+                        trace($market . ' buy gate api error', 'error');
                         return;
                     }
                     $coin_before = $pairConfig[$money['coin']];
@@ -165,6 +167,8 @@ class Jun extends Api
                         'cap_before' => $cap_before,
                         'cap_after' => $cap_after,
                     ]);
+                } else {
+                    trace($market . ' buy amount min: needBuy=>' . $needBuy . ', min=>' . $money['min'], 'error');
                 }
             }
             $price = $bidPrice[0];
@@ -177,6 +181,7 @@ class Jun extends Api
                 if ($needSell > $money['min']) {
                     $gateRes = $exchange->sell(strtoupper($money['coin'] . '_' . $money['money']), $price, min($money['max'], $needSell));
                     if (!$gateRes['result']) {
+                        trace($market . ' sell gate api error', 'error');
                         return;
                     }
                     $coin_before = $pairConfig[$money['coin']];
@@ -205,6 +210,8 @@ class Jun extends Api
                         'cap_before' => $cap_before,
                         'cap_after' => $cap_after,
                     ]);
+                } else {
+                    trace($market . ' sell amount min: needBuy=>' . $needSell . ', min=>' . $money['min'], 'error');
                 }
             }
             sleep(0.8);
