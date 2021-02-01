@@ -123,7 +123,7 @@ class Jun extends Api
             $askPrice = $g['asks'][count($g['asks']) - 1]; // 卖一
 
             $price = $askPrice[0];
-            trace($user . ':' . $money['coin'] . '_' . $money['money'] . 'data：bid1=>' . $bidPrice[0] . ', ask1=>' . $askPrice[0] . ', last=>' . $pairConfig['last_price'], 'info');
+            trace($user . ':' . $money['coin'] . '_' . $money['money'] . 'data：bid1=>' . $bidPrice[0] . ', ask1=>' . $askPrice[0] . ', last=>' . $pairConfig['last_price'], 'error');
             // 没有算手续费
             // 买
             if (($pairConfig['last_price'] - $price) / $price >= $money['condition']) {
