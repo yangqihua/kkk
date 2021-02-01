@@ -23,8 +23,8 @@ class Jun extends Api
     public $pairs = [
         "yang" => [
 //            'bsv3l_usdt' => ['coin' => 'bsv3l', 'money' => 'usdt', 'rate' => 3, 'condition' => 0.01, 'min' => 200, 'max' => 3000],
-            'doge_usdt' => ['coin' => 'doge', 'money' => 'usdt', 'rate' => 2, 'condition' => 0.01, 'min' => 2, 'max' => 30000],
-            'bch_usdt' => ['coin' => 'bch', 'money' => 'usdt', 'rate' => 2, 'condition' => 0.08, 'min' => 0.01, 'max' => 3],
+            'doge_usdt' => ['coin' => 'doge', 'money' => 'usdt', 'rate' => 2, 'condition' => 0.09, 'min' => 2, 'max' => 30000],
+            'bch_usdt' => ['coin' => 'bch', 'money' => 'usdt', 'rate' => 2, 'condition' => 0.008, 'min' => 0.01, 'max' => 3],
             'crv_usdt' => ['coin' => 'crv', 'money' => 'usdt', 'rate' => 1.5, 'condition' => 0.015, 'min' => 0.1, 'max' => 300],
         ],
 //        "xu" => [
@@ -128,7 +128,7 @@ class Jun extends Api
             $buyGap = abs(($pairConfig['last_price'] - $price) / $price * 100);
             $sellGap = abs(($bidPrice[0] - $pairConfig['last_price']) / $bidPrice[0] * 100);
             $gap = round(max($buyGap, $sellGap), 2);
-            trace($user . ':' . $money['coin'] . '_' . $money['money'] . 'data：bid1=>' . $bidPrice[0] . ', ask1=>' . $askPrice[0] . ', last=>' . $pairConfig['last_price'] . ' ,percent=>' . $gap, 'error');
+            trace($user . ':' . $money['coin'] . '_' . $money['money'] . 'data：bid1=>' . $bidPrice[0] . ', ask1=>' . $askPrice[0] . ', last=>' . $pairConfig['last_price'] . ' ,percent=>' . $gap . '%', 'error');
             // 没有算手续费
             // 买
             if (($pairConfig['last_price'] - $price) / $price >= $money['condition']) {
