@@ -123,6 +123,7 @@ class Jun extends Api
             $askPrice = $g['asks'][count($g['asks']) - 1]; // 卖一
 
             $price = $askPrice[0];
+            trace($user . ':' . $money['coin'] . '_' . $money['money'] . 'data：bid1=>' . $bidPrice . ', ask1=>' . $askPrice . ', last=>' . $pairConfig['last_price'], 'info');
             // 没有算手续费
             // 买
             if (($pairConfig['last_price'] - $price) / $price >= $money['condition']) {
@@ -206,6 +207,7 @@ class Jun extends Api
                     ]);
                 }
             }
+            sleep(0.8);
         }
     }
 
@@ -213,10 +215,10 @@ class Jun extends Api
     public function jun_cang()
     {
         // 一分钟8次尝试
-        for ($i = 0; $i < 8; $i++) {
+        for ($i = 0; $i < 10; $i++) {
             $this->jun('yang');
 //            $this->jun('xu');
-            sleep(6);
+            sleep(4);
         }
         $this->success('请求成功');
     }
