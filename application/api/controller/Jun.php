@@ -91,10 +91,18 @@ class Jun extends Api
                     $priceData = json_decode(Http::get('https://data.gateio.life/api2/1/ticker/' . $money['coin'] . '_' . $money['money']), true);
                     $price = $priceData['last'] * 1;
                     $data[$coin] = [
+                        'init_price' => $price,
                         'last_price' => $price,
                         $money['coin'] => $balance[strtoupper($money['coin'])] * $money['rate'],
                         $money['money'] => $balance[strtoupper($money['coin'])] * $price * $money['rate'],
                     ];
+                }
+                // fix init_price
+                if(!array_key_exists('init_price', $data[$coin])){
+                    $flag = true;
+                    $priceData = json_decode(Http::get('https://data.gateio.life/api2/1/ticker/' . $money['coin'] . '_' . $money['money']), true);
+                    $price = $priceData['last'] * 1;
+                    $data[$coin]['init_price'] = $price;
                 }
             }
             if ($flag) {
