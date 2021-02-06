@@ -98,7 +98,7 @@ class Jun extends Api
                     ];
                 }
                 // fix init_price
-                if(!array_key_exists('init_price', $data[$coin])){
+                if (!array_key_exists('init_price', $data[$coin])) {
                     $flag = true;
                     $priceData = json_decode(Http::get('https://data.gateio.life/api2/1/ticker/' . $money['coin'] . '_' . $money['money']), true);
                     $price = $priceData['last'] * 1;
@@ -140,7 +140,8 @@ class Jun extends Api
             $buyGap = abs(($pairConfig['last_price'] - $price) / $price * 100);
             $sellGap = abs(($bidPrice[0] - $pairConfig['last_price']) / $bidPrice[0] * 100);
             $gap = round(max($buyGap, $sellGap), 2);
-            trace($user . ':' . $money['coin'] . '_' . $money['money'] . 'data：bid1=>' . $bidPrice[0] . ', ask1=>' . $askPrice[0] . ', last=>' . $pairConfig['last_price'] . ' ,percent=>' . $gap . '%', 'error');
+            $tag = $gap >= $money['condition'] ? 'OK' : 'FAILED';
+            trace($user . ':[' . $gap . '% ' . $tag . ']' . $money['coin'] . '_' . $money['money'] . 'data：bid1=>' . $bidPrice[0] . ', ask1=>' . $askPrice[0] . ', last=>' . $pairConfig['last_price'], 'error');
             // 没有算手续费
             // 买
             if (($pairConfig['last_price'] - $price) / $price >= $money['condition']) {
