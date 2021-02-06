@@ -145,12 +145,15 @@ class Jun extends Api
 
             $gap = round(max($buyGap, $sellGap), 2);
             $tag = $gap >= $money['condition'] * 100 ? 'OK' : 'FAILED';
-            trace($user . ':[' . $gap . '% ' . $tag . ']' . $money['coin'] . '_' . $money['money'] . 'data：bid1=>' . $bidPrice[0] . ', ask1=>' . $askPrice[0] . ', last=>' . $pairConfig['last_price'], 'error');
+            $dre = $buyGap > $sellGap ? 'buy' : 'sell';
+            $now = date("Y-m-d H:i:s", time());
+            trace('[' . $now . '] - ' . $user . ': [' . $gap . '%, ' . $tag . ', ' . $dre . '] ' . $money['coin'] . '_' . $money['money'] . 'data：bid1=>' . $bidPrice[0] . ', ask1=>' . $askPrice[0] . ', last=>' . $pairConfig['last_price'], 'error');
             // 没有算手续费
             // 买
             if (($pairConfig['last_price'] - $price) / $price >= $money['condition']) {
                 // 跌了50%，没有买的必要了
                 if (abs(($price - $pairConfig['init_price']) / $price > 0.5)) {
+                    trace($market . ' down 50%', 'error');
                     return;
                 }
                 $totalMoney = $pairConfig[$money['coin']] * $price + $pairConfig[$money['money']] * 1;
@@ -235,7 +238,7 @@ class Jun extends Api
                     trace($market . ' sell amount min: needBuy=>' . $needSell . ', min=>' . $money['min'], 'error');
                 }
             }
-            sleep(0.5);
+            sleep(0.1);
         }
     }
 
@@ -246,7 +249,7 @@ class Jun extends Api
         for ($i = 0; $i < 20; $i++) {
             $this->jun('yang');
 //            $this->jun('xu');
-            sleep(2.5);
+            sleep(2);
         }
         $this->success('请求成功');
     }
