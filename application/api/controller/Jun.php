@@ -23,9 +23,13 @@ class Jun extends Api
     public $pairs = [
         "yang" => [
 //            'bsv3l_usdt' => ['coin' => 'bsv3l', 'money' => 'usdt', 'rate' => 3, 'condition' => 0.01, 'min' => 200, 'max' => 3000],
-            'doge_usdt' => ['coin' => 'doge', 'money' => 'usdt', 'rate' => 2, 'condition' => 0.013, 'min' => 2, 'max' => 30000],
-            'bch_usdt' => ['coin' => 'bch', 'money' => 'usdt', 'rate' => 2, 'condition' => 0.013, 'min' => 0.01, 'max' => 3],
-            'crv_usdt' => ['coin' => 'crv', 'money' => 'usdt', 'rate' => 1.5, 'condition' => 0.013, 'min' => 0.1, 'max' => 300],
+            'doge_usdt' => ['coin' => 'doge', 'money' => 'usdt', 'rate' => 2, 'condition' => 0.008, 'min' => 2, 'max' => 30000],
+            'bch_usdt' => ['coin' => 'bch', 'money' => 'usdt', 'rate' => 2, 'condition' => 0.008, 'min' => 0.01, 'max' => 3],
+            'crv_usdt' => ['coin' => 'crv', 'money' => 'usdt', 'rate' => 1.5, 'condition' => 0.008, 'min' => 0.1, 'max' => 300],
+            'btc_usdt' => ['coin' => 'btc', 'money' => 'usdt', 'rate' => 2, 'condition' => 0.008, 'min' => 0.0001, 'max' => 0.1],
+            '1inch_usdt' => ['coin' => '1inch', 'money' => 'usdt', 'rate' => 2, 'condition' => 0.008, 'min' => 0.01, 'max' => 100],
+            'api3_usdt' => ['coin' => 'api3', 'money' => 'usdt', 'rate' => 2, 'condition' => 0.008, 'min' => 0.01, 'max' => 100],
+            'badger_usdt' => ['coin' => 'badger', 'money' => 'usdt', 'rate' => 2, 'condition' => 0.008, 'min' => 0.01, 'max' => 100],
         ],
 //        "xu" => [
 ////            'bsv3l_usdt' => ['coin' => 'bsv3l', 'money' => 'usdt', 'rate' => 3, 'condition' => 0.01, 'min' => 200, 'max' => 3000],
@@ -218,7 +222,7 @@ class Jun extends Api
                     trace($market . ' sell amount min: needBuy=>' . $needSell . ', min=>' . $money['min'], 'error');
                 }
             }
-            sleep(0.8);
+            sleep(0.5);
         }
     }
 
@@ -226,10 +230,10 @@ class Jun extends Api
     public function jun_cang()
     {
         // 一分钟8次尝试
-        for ($i = 0; $i < 10; $i++) {
+        for ($i = 0; $i < 20; $i++) {
             $this->jun('yang');
 //            $this->jun('xu');
-            sleep(4);
+            sleep(1);
         }
         $this->success('请求成功');
     }
