@@ -242,7 +242,7 @@ class Jun extends Api
         for ($i = 0; $i < 20; $i++) {
             $this->jun('yang');
 //            $this->jun('xu');
-            sleep(1);
+            sleep(2.5);
         }
         $this->success('请求成功');
     }
