@@ -137,8 +137,12 @@ class Jun extends Api
 
             $price = $askPrice[0];
 
-            $buyGap = abs(($pairConfig['last_price'] - $price) / $price * 100);
-            $sellGap = abs(($bidPrice[0] - $pairConfig['last_price']) / $bidPrice[0] * 100);
+            // 买
+            $buyGap = ($pairConfig['last_price'] - $price) / $price * 100;
+
+            // 卖
+            $sellGap = ($bidPrice[0] - $pairConfig['last_price']) / $bidPrice[0] * 100;
+
             $gap = round(max($buyGap, $sellGap), 2);
             $tag = $gap >= $money['condition'] * 100 ? 'OK' : 'FAILED';
             trace($user . ':[' . $gap . '% ' . $tag . ']' . $money['coin'] . '_' . $money['money'] . 'data：bid1=>' . $bidPrice[0] . ', ask1=>' . $askPrice[0] . ', last=>' . $pairConfig['last_price'], 'error');
