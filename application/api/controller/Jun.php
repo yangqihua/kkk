@@ -152,7 +152,7 @@ class Jun extends Api
             // 买
             if (($pairConfig['last_price'] - $price) / $price >= $money['condition']) {
                 // 跌了50%，没有买的必要了
-                if (abs(($price - $pairConfig['init_price']) / $price > 0.5)) {
+                if (($pairConfig['init_price'] - $price) / $price > 0.5) {
                     trace($market . ' down 50%', 'error');
                     return;
                 }
