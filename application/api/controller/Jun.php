@@ -154,7 +154,7 @@ class Jun extends Api
                 // 跌了50%，没有买的必要了
                 if (($pairConfig['init_price'] - $price) / $price > 0.5) {
                     trace($market . ' down 50%', 'error');
-                    return;
+                    continue;
                 }
                 $totalMoney = $pairConfig[$money['coin']] * $price + $pairConfig[$money['money']] * 1;
                 $halfMoney = $totalMoney / 2;
