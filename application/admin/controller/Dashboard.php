@@ -22,7 +22,7 @@ class Dashboard extends Backend
     public function index()
     {
         $chartList = [];
-        $markets = ['doge_usdt','bch_usdt','crv_usdt','btc_usdt','1inch_usdt','api3_usdt','badger_usdt'];
+        $markets = ['doge_usdt', 'bch_usdt', 'crv_usdt', 'btc_usdt', '1inch_usdt', 'api3_usdt', 'badger_usdt'];
         foreach ($markets as $k => $market) {
             $sql = 'SELECT * from jun_history WHERE market=:market order by id asc limit 1;';
             $histories = Db::query($sql, ['market' => $market]);
@@ -30,7 +30,7 @@ class Dashboard extends Backend
             $initCoin = $histories[0]['coin_before'];
 
             $firstDay = strtotime(date('Y-m-d', strtotime("-3 month")));
-            $sql = 'SELECT from_unixtime(createtime,\'%Y-%m-%d %H:%i\') createTime,price,cap_after from jun_history 
+            $sql = 'SELECT from_unixtime(createtime,\'%Y-%m-%d %H:%i\') createTime,createtime,price,cap_after from jun_history 
 WHERE createtime>:firstDay and market=:market;';
             $histories = Db::query($sql, ['firstDay' => $firstDay, 'market' => $market]);
             $initCap = [];
@@ -38,14 +38,17 @@ WHERE createtime>:firstDay and market=:market;';
             $date = [];
             $series = [];
             $liData = [];
+            $prices = [];
             foreach ($histories as $key => $history) {
                 $initCap[] = round($initMoney + $initCoin * $history['price'], 2);
                 $quantCap[] = round($history['cap_after'], 2);
                 $date[] = $history['createTime'];
+                $prices[] = $history['price'];
             }
             $liData['持币不动市值'] = $initCap;
             $liData['网格市值'] = $quantCap;
-            $legend = ['持币不动市值', '网格市值'];
+            $liData['价格'] = $prices;
+            $legend = ['持币不动市值', '网格市值', '价格'];
             foreach ($legend as $tKey => $tValue) {
                 $series[] = [
                     'name' => $tValue,
@@ -53,7 +56,10 @@ WHERE createtime>:firstDay and market=:market;';
                     'data' => $liData[$tValue]
                 ];
             }
-            $chartList[$market] = ['legend' => $legend, 'date' => $date, 'series' => $series];
+            $timeGap = $histories[count($histories) - 1]['createtime'] - $histories[0]['createtime'];
+            $year = 3600 * 24 * 365;
+            $percent = round(($quantCap[count($quantCap) - 1] - $initCap[count($initCap) - 1]) * $year / $timeGap * 100, 2);
+            $chartList[$market] = ['percent' => $percent, 'legend' => $legend, 'date' => $date, 'series' => $series];
         }
         $this->view->assign([
             'chartList' => $chartList,
