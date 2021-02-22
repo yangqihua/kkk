@@ -43,9 +43,9 @@ WHERE createtime>:firstDay and market=:market;';
                 $quantCap[] = $history['cap_after'];
                 $date = $history['createTime'];
             }
-            $liData['原市值'] = $initCap;
+            $liData['持币不动市值'] = $initCap;
             $liData['网格市值'] = $quantCap;
-            $legend = ['原市值', '网格市值'];
+            $legend = ['持币不动市值', '网格市值'];
             foreach ($legend as $tKey => $tValue) {
                 $series[] = [
                     'name' => $tValue,
