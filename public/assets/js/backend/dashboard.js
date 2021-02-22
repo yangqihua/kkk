@@ -131,7 +131,10 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'table', 'echarts', 'echart
                 ],
                 series: lineData['series']
             };
+
             inventoryChart.setOption(inventoryOption);
+
+
             lineData = chartList['btc_usdt'];
             inventoryChart = Echarts.init(document.getElementById('btc_chart'));
             inventoryOption = {
