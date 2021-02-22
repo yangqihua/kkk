@@ -30,8 +30,8 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'table', 'echarts', 'echart
                 xAxis: {
                     type: 'category',
                     boundaryGap: false,
-                    // data: lineData['date']
-                    data: []
+                    data: lineData['date']
+                    // data: []
                 },
                 yAxis: {
                     type: 'value',

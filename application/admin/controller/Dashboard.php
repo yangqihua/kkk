@@ -39,9 +39,9 @@ WHERE createtime>:firstDay and market=:market;';
             $series = [];
             $liData = [];
             foreach ($histories as $key => $history) {
-                $initCap[] = $initMoney + $initCoin * $history['price'];
-                $quantCap[] = $history['cap_after'];
-                $date = $history['createTime'];
+                $initCap[] = round($initMoney + $initCoin * $history['price'], 2);
+                $quantCap[] = round($history['cap_after'], 2);
+                $date[] = $history['createTime'];
             }
             $liData['持币不动市值'] = $initCap;
             $liData['网格市值'] = $quantCap;
