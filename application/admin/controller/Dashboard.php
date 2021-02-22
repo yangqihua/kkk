@@ -28,6 +28,7 @@ class Dashboard extends Backend
             $histories = Db::query($sql, ['market' => $market]);
             $initMoney = $histories[0]['money_before'];
             $initCoin = $histories[0]['coin_before'];
+            $initCa = $initMoney + $initCoin * $histories[0]['price'];
 
             $firstDay = strtotime(date('Y-m-d', strtotime("-3 month")));
             $sql = 'SELECT from_unixtime(createtime,\'%Y-%m-%d %H:%i\') createTime,createtime,price,cap_after from jun_history 
@@ -58,7 +59,7 @@ WHERE createtime>:firstDay and market=:market;';
             }
             $timeGap = $histories[count($histories) - 1]['createtime'] - $histories[0]['createtime'];
             $year = 3600 * 24 * 365;
-            $percent = round(($quantCap[count($quantCap) - 1] - $initCap[count($initCap) - 1]) * $year / $timeGap * 100, 2);
+            $percent = round(($quantCap[count($quantCap) - 1] - $initCap[count($initCap) - 1]) * $year / $timeGap / $initCa * 100, 2);
             $chartList[$market] = ['percent' => $percent, 'legend' => $legend, 'date' => $date, 'series' => $series];
         }
         $this->view->assign([
