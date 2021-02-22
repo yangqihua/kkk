@@ -22,7 +22,7 @@ class Dashboard extends Backend
     public function index()
     {
         $chartList = [];
-        $markets = ['doge_usdt'];
+        $markets = ['doge_usdt','bch_usdt','crv_usdt','btc_usdt','1inch_usdt','api3_usdt','badger_usdt'];
         foreach ($markets as $k => $market) {
             $sql = 'SELECT * from jun_history WHERE market=:market order by id asc limit 1;';
             $histories = Db::query($sql, ['market' => $market]);
