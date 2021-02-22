@@ -60,7 +60,8 @@ WHERE createtime>:firstDay and market=:market;';
             $timeGap = $histories[count($histories) - 1]['createtime'] - $histories[0]['createtime'];
             $year = 3600 * 24 * 365;
             $percent = round(($quantCap[count($quantCap) - 1] - $initCap[count($initCap) - 1]) * $year / $timeGap / $initCa * 100, 2);
-            $chartList[$market] = ['percent' => $percent, 'legend' => $legend, 'date' => $date, 'series' => $series];
+            $get = round($quantCap[count($quantCap) - 1] - $initCa, 2);
+            $chartList[$market] = ['get' => $get, 'percent' => $percent, 'legend' => $legend, 'date' => $date, 'series' => $series];
         }
         $this->view->assign([
             'chartList' => $chartList,

@@ -11,7 +11,7 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'table', 'echarts', 'echart
                 var coin = market.split("_")[0];
                 var inventoryOption = {
                     title: {
-                        text: coin + '年化:' + percent + '%',
+                        text: coin + '年化:' + percent + '%' + ' 收益:' + chartList[market]['get'] + ' USDT',
                         textStyle: {
                             color: '#27C24C',
                             fontSize: '16'
